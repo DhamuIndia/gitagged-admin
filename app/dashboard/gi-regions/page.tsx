@@ -126,7 +126,7 @@ export default function GIRegionsPage() {
         />
         
         {/* Image */}
-          <label className="font-medium">Category Image</label>
+          <label className="font-medium">State Image</label>
 
           <input
           key={imageInputKey}

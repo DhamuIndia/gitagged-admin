@@ -180,7 +180,7 @@ export default function ProductsPage() {
             onChange={e => setForm({ ...form, price: e.target.value })}
             className="border p-2 rounded"
           />
-          <label htmlFor='product-stock'>Stock</label>
+          <label htmlFor='product-stock'>Stock Available</label>
           <input
             id='product-stock'
             type="number"
