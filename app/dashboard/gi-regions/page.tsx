@@ -50,7 +50,7 @@ export default function GIRegionsPage() {
 
   const save = async () => {
     if (!isFormValid()) {
-      alert('Please fill all required fields correctly');
+      // alert('Please fill all required fields correctly');
       return;
     }
 
@@ -124,50 +124,71 @@ export default function GIRegionsPage() {
           className="border rounded-lg px-4 py-2 resize-none"
           rows={2}
         />
-        
-        {/* Image */}
-          <label className="font-medium">State Image</label>
+
+        {/* State Image */}
+        <label className="font-medium">State Image</label>
+
+        <div>
+          <label
+            htmlFor="region-image"
+            className="block border px-4 py-2 rounded cursor-pointer bg-white hover:bg-gray-50 text-gray-600 text-center"
+          >
+            Choose from folder
+          </label>
 
           <input
-          key={imageInputKey}
+            key={imageInputKey}
+            id="region-image"
             type="file"
             accept="image/*"
-            className="border p-2 rounded w-full"
+            className="hidden"
             onChange={async (e) => {
               if (!e.target.files?.[0]) return;
-              const res = await uploadGiRegionImage(e.target.files[0]);
-              setForm(prev => ({
-                ...prev,
-                image: res.data.url,
-              }));
+
+              try {
+                const res = await uploadGiRegionImage(
+                  e.target.files[0]
+                );
+
+                setForm(prev => ({
+                  ...prev,
+                  image: res.data.url,
+                }));
+              } catch (err) {
+                alert('Image upload failed');
+                console.error(err);
+              }
             }}
           />
+
+          {/* IMAGE PREVIEW */}
+          {form.image && (
+            <div className="mt-3 flex justify-end">
+              <img
+                src={form.image}
+                alt="GI Region"
+                className="h-28 w-28 object-cover rounded border"
+              />
+            </div>
+          )}
+        </div>
 
         {/* Categories */}
         <label className="font-medium">Categories</label>
         <div className="relative">
-
-          {/* Trigger */}
           <div
             onClick={() => setShowCategories(!showCategories)}
             className="border rounded px-3 py-2 cursor-pointer flex justify-between bg-white"
           >
             <span className="text-gray-600">
-              {form.categories.length
-                ? `${form.categories.length} selected`
-                : 'Select Categories'}
+              {form.categories.length ? `${form.categories.length} selected` : 'Select Categories'}
             </span>
             <span>▾</span>
           </div>
-
-          {/* Dropdown */}
           {showCategories && (
             <div className="absolute z-10 w-full bg-white border rounded shadow max-h-48 overflow-y-auto mt-1">
               {categories.map((c) => (
-                <label
-                  key={c._id}
-                  className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                >
+                <label key={c._id} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={form.categories.includes(c._id)}

@@ -1,33 +1,34 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
 export default function LoginPage() {
+  const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null; // ⬅️ prevents hydration mismatch
+  }
 
   const handleLogin = async () => {
     try {
       const res = await axios.post(
         'http://localhost:3002/admin-auth/login',
-        {
-          email,
-          password,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
+        { email, password },
+        { headers: { 'Content-Type': 'application/json' } }
       );
 
       localStorage.setItem('adminToken', res.data.accessToken);
       router.push('/dashboard');
     } catch (err: any) {
-      console.error(err);
       alert(err.response?.data?.message || 'Login failed');
     }
   };
@@ -41,6 +42,7 @@ export default function LoginPage() {
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        autoComplete="off"
       />
 
       <input
@@ -49,6 +51,7 @@ export default function LoginPage() {
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        autoComplete="new-password"
       />
 
       <button

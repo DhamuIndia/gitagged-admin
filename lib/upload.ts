@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { api } from './api';
 
 export const uploadImage = (file: File) => {
@@ -25,7 +26,20 @@ export const uploadGiRegionImage = (file: File) => {
   const formData = new FormData();
   formData.append('file', file);
 
-  return api.post('/gi-regions/upload-image', formData);
+  return axios.post(
+    'http://localhost:3002/gi-regions/upload-image',
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${localStorage.getItem('adminToken')}`,
+      },
+    }
+  );
 };
+
+
+
+
 
 

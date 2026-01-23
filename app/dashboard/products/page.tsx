@@ -246,28 +246,51 @@ export default function ProductsPage() {
           {/* LEFT LABEL */}
           <label className="font-medium">Choose Image</label>
 
-          {/* RIGHT INPUT */}
-          <input
-            type="file"
-            accept="image/*"
-            className="border p-2 rounded w-full"
-            onChange={async (e) => {
-              if (!e.target.files?.[0]) return;
+          {/* RIGHT CUSTOM FILE PICKER */}
+          <div>
+            <label
+              htmlFor="product-image"
+              className="block border px-4 py-2 rounded cursor-pointer bg-white hover:bg-gray-50 text-gray-600 text-center"
+            >
+              Choose from folder
+            </label>
 
-              try {
-                const res = await uploadImage(e.target.files[0]);
+            <input
+              id="product-image"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={async (e) => {
+                if (!e.target.files?.[0]) return;
 
-                setForm((prev) => ({
-                  ...prev,
-                  images: [...prev.images, res.data.url],
-                }));
-              } catch (err) {
-                alert('Image upload failed');
-                console.error(err);
-              }
-            }}
-          />
+                try {
+                  const res = await uploadImage(e.target.files[0]);
+
+                  setForm((prev) => ({
+                    ...prev,
+                    images: [...prev.images, res.data.url],
+                  }));
+                } catch (err) {
+                  alert('Image upload failed');
+                  console.error(err);
+                }
+              }}
+            />
+          </div>
         </div>
+        {/* IMAGE PREVIEW */}
+        {form.images.length > 0 && (
+          <div className="flex gap-3 flex-wrap mt-3">
+            {form.images.map((img, i) => (
+              <img
+                key={i}
+                src={img}
+                className="h-28 w-28 object-cover rounded border"
+                alt="product"
+              />
+            ))}
+          </div>
+        )}
 
         {/* Categories */}
         <div className="grid grid-cols-2 gap-4 items-center">
