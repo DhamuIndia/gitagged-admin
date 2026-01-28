@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 
@@ -11,12 +11,24 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!localStorage.getItem('adminToken')) {
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
       router.push('/login');
+      return;
     }
+    setLoading(false);
   }, [router]);
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center text-slate-500">
+        Loading admin dashboard...
+      </div>
+    );
+  }
 
   const linkClass = (path: string) =>
     `flex items-center gap-3 px-4 py-3 rounded-xl mb-1 transition-all ${pathname === path
