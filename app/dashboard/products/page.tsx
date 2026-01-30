@@ -14,16 +14,22 @@ export default function ProductsPage() {
   const [showCategories, setShowCategories] = useState(false);
   const [showRegions, setShowRegions] = useState(false);
 
+  const [showImageModal, setShowImageModal] = useState(false);
+
 
   const [form, setForm] = useState({
     title: '',
     price: '',
     stock: '',
+    description: '',
+    discountPercentage: '',
     images: [] as string[],
     categories: [] as string[],
     giRegions: [] as string[],
     status: 'active',
   });
+
+  const [attributes, setAttributes] = useState([{ key: '', value: '' }]);
 
   useEffect(() => {
     load();
@@ -41,23 +47,19 @@ export default function ProductsPage() {
   };
 
   const isFormValid = () => {
-
     if (!form.title.trim()) return false;
     if (!form.price || Number(form.price) <= 0) return false;
     if (!form.stock || Number(form.stock) < 0) return false;
-
     if (form.categories.length === 0) return false;
     if (form.giRegions.length === 0) return false;
+    if (form.description.trim() === '') return false;
+    if (form.discountPercentage.length === 0) return false;
 
     for (const attr of attributes) {
       const hasKey = attr.key.trim() !== '';
       const hasValue = attr.value.trim() !== '';
-
-      if (hasKey !== hasValue) {
-        return false;
-      }
+      if (hasKey !== hasValue) return false;
     }
-
     return true;
   };
 
@@ -72,21 +74,16 @@ export default function ProductsPage() {
       slug: form.title.toLowerCase().replace(/\s+/g, '-'),
       price: Number(form.price),
       stock: Number(form.stock),
+      description: form.description,
+      discountPercentage: Number(form.discountPercentage),
       images: form.images,
       attributes: attributes.reduce((acc, item) => {
-        if (item.key && item.value) {
-          acc[item.key] = item.value;
-        }
+        if (item.key && item.value) acc[item.key] = item.value;
         return acc;
       }, {} as Record<string, string>),
     };
 
-    if (editingId) {
-      await updateProduct(editingId, payload);
-    } else {
-      await createProduct(payload);
-    }
-
+    editingId ? await updateProduct(editingId, payload) : await createProduct(payload);
     reset();
     load();
   };
@@ -97,6 +94,8 @@ export default function ProductsPage() {
       title: '',
       price: '',
       stock: '',
+      description: '',
+      discountPercentage: '',
       images: [],
       categories: [],
       giRegions: [],
@@ -111,19 +110,22 @@ export default function ProductsPage() {
       title: p.title,
       price: p.price,
       stock: p.stock,
+      description: p.description,
+      discountPercentage: p.discountPercentage,
       images: p.images || [],
       categories: p.categories || [],
       giRegions: p.giRegions || [],
       status: p.status,
     });
-    setAttributes(
-      p.attributes
+    const attrs =
+      p.attributes && Object.keys(p.attributes).length > 0
         ? Object.entries(p.attributes).map(([key, value]) => ({
           key,
           value: value as string,
         }))
-        : [{ key: '', value: '' }]
-    );
+        : [{ key: '', value: '' }];
+
+    setAttributes(attrs);
   };
 
   const remove = async (id: string) => {
@@ -131,10 +133,6 @@ export default function ProductsPage() {
     await deleteProduct(id);
     load();
   };
-
-  const [attributes, setAttributes] = useState([
-    { key: '', value: '' }
-  ]);
 
   const updateAttribute = (index: number, field: 'key' | 'value', value: string) => {
     const copy = [...attributes];
@@ -150,277 +148,331 @@ export default function ProductsPage() {
     setAttributes(attributes.filter((_, i) => i !== index));
   };
 
-  const attributesObject = attributes.reduce((acc, item) => {
-    if (item.key && item.value) {
-      acc[item.key] = item.value;
-    }
-    return acc;
-  }, {} as Record<string, string>);
-
   return (
-    <div className="p-6 max-w-6xl center mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Products</h1>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
 
-      {/* Product Form */}
-      <div className="border p-4 rounded mb-6 space-y-3">
-
-        <div className="grid grid-cols-2 gap-2">
-          <label htmlFor="product-title" className="w-32 font-medium">Product Title</label>
-          <input
-            id='product-title'
-            value={form.title}
-            onChange={e => setForm({ ...form, title: e.target.value })}
-            className="border p-2 rounded"
-          />
-          <label htmlFor='product-price'>Price</label>
-          <input
-            id='product-price'
-            type="number"
-            value={form.price}
-            onChange={e => setForm({ ...form, price: e.target.value })}
-            className="border p-2 rounded"
-          />
-          <label htmlFor='product-stock'>Stock Available</label>
-          <input
-            id='product-stock'
-            type="number"
-            value={form.stock}
-            onChange={e => setForm({ ...form, stock: e.target.value })}
-            className="border p-2 rounded"
-          />
+        {/* HEADER */}
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-semibold">Products</h1>
+            <p className="text-sm text-gray-500">Create and manage products</p>
+          </div>
         </div>
 
-        {attributes.map((attr, index) => (
-          <div
-            key={index}
-            className="grid grid-cols-2 gap-4 items-center mb-2"
-          >
-            {/* LEFT LABEL */}
-            <label className="font-medium">
-              {index === 0 ? 'Attribute' : ''}
-            </label>
+        {/* FORM */}
+        <div className="bg-white rounded-xl shadow p-6 mb-10">
+          <div className="grid md:grid-cols-3 gap-6">
 
-            {/* RIGHT INPUTS */}
-            <div className="flex gap-2 w-full">
-              <input
-                placeholder="Key"
-                value={attr.key}
-                onChange={(e) =>
-                  updateAttribute(index, 'key', e.target.value)
-                }
-                className="border px-3 py-2 rounded w-1/2"
-              />
+            {/* LEFT */}
+            <div className="md:col-span-2 space-y-4">
 
-              <input
-                placeholder="Value"
-                value={attr.value}
-                onChange={(e) =>
-                  updateAttribute(index, 'value', e.target.value)
-                }
-                className="border px-3 py-2 rounded w-1/2"
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <label className='block mb-2 font-medium' htmlFor='titleLabel'>Product Title</label>
+                <input
+                  type="text"
+                  id='titleLabel'
+                  value={form.title}
+                  onChange={e => setForm({ ...form, title: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <label className='block mb-2 font-medium' htmlFor='priceLabel'>Price</label>
+                <input
+                  type="number"
+                  id='priceLabel'
+                  value={form.price}
+                  onChange={e => setForm({ ...form, price: e.target.value })}
+                  className="border rounded-lg px-3 py-2"
+                />
+                <label className='block mb-2 font-medium' htmlFor='stockLabel'>Stock</label>
+                <input
+                  type="number"
+                  id='stockLabel'
+                  value={form.stock}
+                  onChange={e => setForm({ ...form, stock: e.target.value })}
+                  className="border rounded-lg px-3 py-2"
+                />
+                <label className='block mb-2 font-medium' htmlFor='discountLabel'>Discount Percentage</label>
+                <input
+                  type="number"
+                  id='discountLabel'
+                  value={form.discountPercentage}
+                  onChange={e => setForm({ ...form, discountPercentage: e.target.value })}
+                  className="border rounded-lg px-3 py-2"
+                />
+              </div>
 
-              <button
-                type="button"
-                onClick={addAttributeRow}
-                className="px-3 py-2 bg-green-600 text-white rounded"
-              >
-                +
-              </button>
+              {/* ATTRIBUTES */}
+              {/* <div className="border rounded-lg p-4 space-y-2"> */}
+              <h3 className="font-medium">Attributes</h3>
+              {attributes.map((attr, index) => (
+                <div key={index} className="flex gap-2">
+                  <input
+                    placeholder="Key"
+                    value={attr.key}
+                    onChange={e => updateAttribute(index, 'key', e.target.value)}
+                    className="border rounded px-3 py-2 w-1/2"
+                  />
+                  <input
+                    placeholder="Value"
+                    value={attr.value}
+                    onChange={e => updateAttribute(index, 'value', e.target.value)}
+                    className="border rounded px-3 py-2 w-1/2"
+                  />
+                  <button onClick={addAttributeRow} className="bg-green-600 text-white px-3 rounded">+</button>
+                  {attributes.length > 1 && (
+                    <button onClick={() => removeAttributeRow(index)} className="bg-red-600 text-white px-3 rounded">−</button>
+                  )}
+                </div>
+              ))}
+              {/* </div> */}
 
-              {attributes.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeAttributeRow(index)}
-                  className="px-3 py-2 bg-red-600 text-white rounded"
+              {/* CATEGORIES */}
+              <div className="relative">
+                <label className="font-medium">Categories</label>
+                <div
+                  onClick={() => setShowCategories(!showCategories)}
+                  className="border rounded-lg px-3 py-2 cursor-pointer flex justify-between"
                 >
-                  −
-                </button>
-              )}
+                  {form.categories.length ? `${form.categories.length} selected` : 'Select Categories'}
+                  <span>▾</span>
+                </div>
+
+                {showCategories && (
+                  <div className="absolute z-10 bg-white border rounded shadow max-h-48 overflow-y-auto w-full mt-1">
+                    {categories.map(c => (
+                      <label key={c._id} className="flex gap-2 px-3 py-2 hover:bg-gray-100">
+                        <input
+                          type="checkbox"
+                          checked={form.categories.includes(c._id)}
+                          onChange={() =>
+                            setForm({
+                              ...form,
+                              categories: form.categories.includes(c._id)
+                                ? form.categories.filter(id => id !== c._id)
+                                : [...form.categories, c._id],
+                            })
+                          }
+                        />
+                        {c.name}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* GI REGIONS */}
+              <div className="relative">
+                <label className="font-medium">GI Regions</label>
+                <div
+                  onClick={() => setShowRegions(!showRegions)}
+                  className="border rounded-lg px-3 py-2 cursor-pointer flex justify-between"
+                >
+                  {form.giRegions.length ? `${form.giRegions.length} selected` : 'Select GI Regions'}
+                  <span>▾</span>
+                </div>
+
+                {showRegions && (
+                  <div className="absolute z-10 bg-white border rounded shadow max-h-48 overflow-y-auto w-full mt-1">
+                    {regions.map(r => (
+                      <label key={r._id} className="flex gap-2 px-3 py-2 hover:bg-gray-100">
+                        <input
+                          type="checkbox"
+                          checked={form.giRegions.includes(r._id)}
+                          onChange={() =>
+                            setForm({
+                              ...form,
+                              giRegions: form.giRegions.includes(r._id)
+                                ? form.giRegions.filter(id => id !== r._id)
+                                : [...form.giRegions, r._id],
+                            })
+                          }
+                        />
+                        {r.name}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
 
-        {/* IMAGE UPLOAD */}
-        <div className="grid grid-cols-2 gap-4 items-center">
-          {/* LEFT LABEL */}
-          <label className="font-medium">Choose Image</label>
+            {/* RIGHT – MEDIA */}
+            <div className="space-y-4">
 
-          {/* RIGHT CUSTOM FILE PICKER */}
-          <div>
-            <label
-              htmlFor="product-image"
-              className="block border px-4 py-2 rounded cursor-pointer bg-white hover:bg-gray-50 text-gray-600 text-center"
-            >
-              Choose from folder
-            </label>
+              <label htmlFor='descriptionLabel'>Description</label>
+              <textarea
+                id='descriptionLabel'
+                value={form.description}
+                onChange={e => setForm({ ...form, description: e.target.value })}
+                className="w-full border rounded-lg px-3 py-2 resize-none"
+              />
 
-            <input
-              id="product-image"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={async (e) => {
-                if (!e.target.files?.[0]) return;
+              <h2 className="font-semibold text-lg">Product Media</h2>
+              {/* Upload / Preview Box */}
+              <div
+                onClick={() => {
+                  if (form.images.length > 0) {
+                    setShowImageModal(true);
+                  } else {
+                    document.getElementById('product-image-input')?.click();
+                  }
+                }}
+                className="relative border-2 border-dashed rounded-xl h-72 cursor-pointer flex items-center justify-center bg-gray-50 hover:bg-gray-100"
+              >
+                {/* EMPTY STATE */}
+                {form.images.length === 0 && (
+                  <div className="text-center text-gray-500">
+                    <p className="font-medium">Upload Images</p>
+                    <p className="text-sm">PNG, JPG supported</p>
+                  </div>
+                )}
 
-                try {
+                {/* STACKED IMAGES */}
+                {form.images.length > 0 && (
+                  <div className="relative w-40 h-40">
+                    {form.images.slice(0, 3).map((img, index) => (
+                      <img
+                        key={index}
+                        src={img}
+                        className="absolute w-40 h-40 object-cover rounded-lg border shadow"
+                        style={{
+                          top: index * 6,
+                          left: index * 6,
+                          zIndex: 10 - index,
+                        }}
+                      />
+                    ))}
+
+                    {form.images.length > 3 && (
+                      <div className="absolute bottom-2 right-2 bg-black text-white text-xs px-2 py-1 rounded">
+                        +{form.images.length - 3}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Hidden File Input */}
+              <input
+                id="product-image-input"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  if (!e.target.files?.[0]) return;
                   const res = await uploadProductImage(e.target.files[0]);
-
-                  setForm((prev) => ({
+                  setForm(prev => ({
                     ...prev,
                     images: [...prev.images, res.data.url],
                   }));
-                } catch (err) {
-                  alert('Image upload failed');
-                  console.error(err);
-                }
-              }}
-            />
-          </div>
-        </div>
-        {/* IMAGE PREVIEW */}
-        {form.images.length > 0 && (
-          <div className="flex gap-3 flex-wrap mt-3">
-            {form.images.map((img, i) => (
-              <img
-                key={i}
-                src={img}
-                className="h-28 w-28 object-cover rounded border"
-                alt="product"
+                }}
               />
-            ))}
-          </div>
-        )}
-
-        {/* Categories */}
-        <div className="grid grid-cols-2 gap-4 items-center">
-          <label className="font-medium">Categories</label>
-
-          <div className="relative">
-            <div
-              onClick={() => setShowCategories(!showCategories)}
-              className="border rounded px-3 py-2 cursor-pointer flex justify-between bg-white"
-            >
-              <span className="text-gray-600">
-                {form.categories.length
-                  ? `${form.categories.length} selected`
-                  : 'Select Categories'}
-              </span>
-              <span>▾</span>
             </div>
 
-            {showCategories && (
-              <div className="absolute z-10 w-full bg-white border rounded shadow max-h-48 overflow-y-auto mt-1">
-                {categories.map((c) => (
-                  <label
-                    key={c._id}
-                    className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={form.categories.includes(c._id)}
-                      onChange={() =>
-                        setForm({
-                          ...form,
-                          categories: form.categories.includes(c._id)
-                            ? form.categories.filter(id => id !== c._id)
-                            : [...form.categories, c._id],
-                        })
-                      }
-                    />
-                    {c.name}
-                  </label>
-                ))}
-              </div>
-            )}
           </div>
-        </div>
 
-        {/* GI Regions */}
-        <div className="grid grid-cols-2 gap-4 items-center">
-          <label className="font-medium">GI Regions</label>
+          {/* IMAGE MODAL */}
+          {showImageModal && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+              <div className="bg-white rounded-xl max-w-4xl w-full p-6 relative">
 
-          <div className="relative">
-            <div
-              onClick={() => setShowRegions(!showRegions)}
-              className="border rounded px-3 py-2 cursor-pointer flex justify-between bg-white"
-            >
-              <span className="text-gray-600">
-                {form.giRegions.length
-                  ? `${form.giRegions.length} selected`
-                  : 'Select GI Regions'}
-              </span>
-              <span>▾</span>
+                {/* Header */}
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold">Product Images</h2>
+                  <button
+                    onClick={() => setShowImageModal(false)}
+                    className="text-gray-500 hover:text-black"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Image Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-h-[60vh] overflow-y-auto">
+                  {form.images.map((img, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={img}
+                        className="w-full h-40 object-cover rounded-lg border"
+                      />
+                      <button
+                        onClick={() =>
+                          setForm(prev => ({
+                            ...prev,
+                            images: prev.images.filter((_, i) => i !== index),
+                          }))
+                        }
+                        className="absolute top-2 right-2 bg-red-600 text-white rounded-full px-2 py-1 text-xs opacity-0 group-hover:opacity-100"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Footer */}
+                <div className="flex justify-end gap-3 mt-6">
+                  <button
+                    onClick={() => document.getElementById('product-image-input')?.click()}
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+                  >
+                    Upload More
+                  </button>
+
+                  <button
+                    onClick={() => setShowImageModal(false)}
+                    className="border px-4 py-2 rounded-lg"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
             </div>
+          )}
 
-            {showRegions && (
-              <div className="absolute z-10 w-full bg-white border rounded shadow max-h-48 overflow-y-auto mt-1">
-                {regions.map((r) => (
-                  <label
-                    key={r._id}
-                    className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={form.giRegions.includes(r._id)}
-                      onChange={() =>
-                        setForm({
-                          ...form,
-                          giRegions: form.giRegions.includes(r._id)
-                            ? form.giRegions.filter(id => id !== r._id)
-                            : [...form.giRegions, r._id],
-                        })
-                      }
-                    />
-                    {r.name}
-                  </label>
-                ))}
-              </div>
-            )}
+          {/* Save */}
+          <div className="flex justify-center pt-4">
+            <button
+              onClick={save}
+              className="bg-indigo-600 text-white px-20 py-2 rounded-lg"
+            >
+              {editingId ? 'Update Product' : 'Add Product'}
+            </button>
           </div>
+
         </div>
 
-        <div className="grid grid-cols-2 gap-4 items-center">
-          <div></div>
-
-          <button
-            onClick={save}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg w-full"
-          >
-            {editingId ? 'Update Product' : 'Add Product'}
-          </button>
-        </div>
-
-
-        {/* Product List */}
-        <table className="w-full border">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border p-2">Title</th>
-              <th className="border p-2">Price</th>
-              <th className="border p-2">Stock</th>
-              <th className="border p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map(p => (
-              <tr key={p._id}>
-                <td className="border p-2 text-center">{p.title}</td>
-                <td className="border p-2 text-center">₹{p.price}</td>
-                <td className="border p-2 text-center">{p.stock}</td>
-                <td className="border p-2 text-center">
-                  <button onClick={() => edit(p)} className="text-blue-600 mr-3">
-                    Edit
-                  </button>
-                  <button onClick={() => remove(p._id)} className="text-red-600">
-                    Delete
-                  </button>
-                </td>
+        {/* LIST */}
+        <div className="bg-white rounded-xl shadow p-6">
+          <h2 className="font-semibold mb-4">Product List</h2>
+          <table className="w-full border">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="border p-2">Title</th>
+                <th className="border p-2">Price</th>
+                <th className="border p-2">Stock</th>
+                <th className="border p-2">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {products.map(p => (
+                <tr key={p._id} className="hover:bg-gray-50">
+                  <td className="border p-2 text-center">{p.title}</td>
+                  <td className="border p-2 text-center">₹{p.price}</td>
+                  <td className="border p-2 text-center">{p.stock}</td>
+                  <td className="border p-2 text-center">
+                    <button onClick={() => edit(p)} className="text-blue-600 mr-3">Edit</button>
+                    <button onClick={() => remove(p._id)} className="text-red-600">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
 }
+
