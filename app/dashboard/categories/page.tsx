@@ -141,7 +141,7 @@ export default function CategoriesPage() {
                 onClick={() =>
                   document.getElementById('category-image-input')?.click()
                 }
-                className="relative border-2 border-dashed rounded-xl h-64 cursor-pointer flex items-center justify-center bg-gray-50 hover:bg-gray-100"
+                className="relative border-2 border-dashed rounded-xl h-56 cursor-pointer flex items-center justify-center bg-gray-50 hover:bg-gray-100"
               >
                 {!form.image && (
                   <div className="text-center text-gray-500">

@@ -186,7 +186,7 @@ export default function GIRegionsPage() {
                 onClick={() =>
                   document.getElementById('region-image-input')?.click()
                 }
-                className="relative border-2 border-dashed rounded-xl h-72 cursor-pointer flex items-center justify-center bg-gray-50 hover:bg-gray-100"
+                className="relative border-2 border-dashed rounded-xl h-60 cursor-pointer flex items-center justify-center bg-gray-50 hover:bg-gray-100"
               >
                 {!form.image && (
                   <div className="text-center text-gray-500">
