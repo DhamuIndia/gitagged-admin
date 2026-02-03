@@ -148,6 +148,11 @@ export default function ProductsPage() {
     setAttributes(attributes.filter((_, i) => i !== index));
   };
 
+  const getCategoryNames = (categories: any[]) => {
+  if (!Array.isArray(categories)) return '';
+  return categories.map(c => c.name).join(', ');
+};
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -156,7 +161,6 @@ export default function ProductsPage() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-semibold">Products</h1>
-            <p className="text-sm text-gray-500">Create and manage products</p>
           </div>
         </div>
 
@@ -453,6 +457,7 @@ export default function ProductsPage() {
                 <th className="border p-2">Title</th>
                 <th className="border p-2">Price</th>
                 <th className="border p-2">Stock</th>
+                <th className="border p-2">Category</th>
                 <th className="border p-2">Actions</th>
               </tr>
             </thead>
@@ -462,6 +467,9 @@ export default function ProductsPage() {
                   <td className="border p-2 text-center">{p.title}</td>
                   <td className="border p-2 text-center">₹{p.price}</td>
                   <td className="border p-2 text-center">{p.stock}</td>
+                  <td className="border p-2 text-center">
+                    {getCategoryNames(p.categories)}
+                  </td>
                   <td className="border p-2 text-center">
                     <button onClick={() => edit(p)} className="text-blue-600 mr-3">Edit</button>
                     <button onClick={() => remove(p._id)} className="text-red-600">Delete</button>

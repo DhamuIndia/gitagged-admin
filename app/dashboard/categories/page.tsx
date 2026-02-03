@@ -79,6 +79,55 @@ export default function CategoriesPage() {
 
   const [imageInputKey, setImageInputKey] = useState(0);
 
+  const getCategoryById = (id: string) =>
+    categories.find(c => c._id === id);
+
+  // const getCategoryPath = (category: any): string[] => {
+  //   const path = [category.name];
+  //   let current = category;
+
+  //   while (current.parentId) {
+  //     const parent = getCategoryById(current.parentId);
+  //     if (!parent) break;
+  //     path.unshift(parent.name);
+  //     current = parent;
+  //   }
+
+  //   return path;
+  // };
+
+  // const getCategoryById = (id: string) =>
+  // categories.find(c => c._id === id);
+
+  const resolveLevels = (category: any) => {
+    let main = '-';
+    let sub = '-';
+    let child = '-';
+
+    if (!category.parentId) {
+      // MAIN CATEGORY
+      main = category.name;
+    } else {
+      const parent = getCategoryById(category.parentId);
+
+      if (parent && !parent.parentId) {
+        // SUB CATEGORY
+        main = parent.name;
+        sub = category.name;
+      } else if (parent && parent.parentId) {
+        // CHILD CATEGORY
+        const grandParent = getCategoryById(parent.parentId);
+        if (grandParent) {
+          main = grandParent.name;
+          sub = parent.name;
+          child = category.name;
+        }
+      }
+    }
+
+    return { main, sub, child };
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
@@ -189,36 +238,34 @@ export default function CategoriesPage() {
           <h2 className="font-semibold mb-4">Category List</h2>
 
           <table className="w-full border">
-            <thead className="bg-gray-100">
+            <thead>
               <tr>
-                <th className="border p-2">Category</th>
-                <th className="border p-2">Parent</th>
-                <th className="border p-2">Actions</th>
+                <th className="border p-2 bg-gray-100">Main Category</th>
+                <th className="border p-2 bg-gray-100">Sub Category</th>
+                <th className="border p-2 bg-gray-100">Child Category</th>
+                <th className="border p-2 bg-gray-100">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {categories.map(c => (
-                <tr key={c._id}>
-                  <td className="border p-2 text-center">{c.name}</td>
-                  <td className="border p-2 text-center">
-                    {categories.find(x => x._id === c.parentId)?.name || '-'}
-                  </td>
-                  <td className="border p-2 text-center">
-                    <button
-                      onClick={() => edit(c)}
-                      className="text-blue-600 mr-3"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => remove(c._id)}
-                      className="text-red-600"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {categories.map(c => {
+                const { main, sub, child } = resolveLevels(c);
+
+                return (
+                  <tr key={c._id}>
+                    <td className="border p-2 text-center">{main}</td>
+                    <td className="border p-2 text-center">{sub}</td>
+                    <td className="border p-2 text-center">{child}</td>
+                    <td className="border p-2 text-center">
+                      <button onClick={() => edit(c)} className="text-blue-600 mr-3">
+                        Edit
+                      </button>
+                      <button onClick={() => remove(c._id)} className="text-red-600">
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
