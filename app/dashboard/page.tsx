@@ -5,27 +5,31 @@ import { useState, useEffect } from 'react';
 import { getCategories } from '@/lib/categories';
 import { getRegions } from '@/lib/gi-regions';
 import { getProducts } from '@/lib/products';
+import { getUsers } from '@/lib/users';
 
 export default function DashboardPage() {
   const [counts, setCounts] = useState({
     categories: 0,
     regions: 0,
     products: 0,
+    users:0,
   });
 
   useEffect(() => {
     const loadCounts = async () => {
       try {
-        const [c, r, p] = await Promise.all([
+        const [c, r, p , u] = await Promise.all([
           getCategories(),
           getRegions(),
           getProducts(),
+          getUsers(),
         ]);
 
         setCounts({
           categories: c.data.length,
           regions: r.data.length,
           products: p.data.length,
+          users: u.data.length,
         });
       } catch (err) {
         console.error('Failed to load dashboard counts', err);
@@ -77,6 +81,18 @@ export default function DashboardPage() {
           </h2>
           <p className="text-xl font-bold mt-2">{counts.products}</p>
         </Link>
+
+        {/* Users */}
+        <Link
+          href="/dashboard/users"
+          className="rounded-xl bg-slate-50 p-6 border block hover:border-indigo-600 transition"
+        >
+          <h2 className="text-2xl font-bold text-black hover:text-indigo-600 transition">
+            Users
+          </h2>
+          <p className="text-xl font-bold mt-2">{counts.users}</p>
+        </Link>
+
       </div>
     </div>
   );
