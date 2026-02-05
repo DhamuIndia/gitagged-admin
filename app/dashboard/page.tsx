@@ -6,23 +6,26 @@ import { getCategories } from '@/lib/categories';
 import { getRegions } from '@/lib/gi-regions';
 import { getProducts } from '@/lib/products';
 import { getUsers } from '@/lib/users';
+import { getAllOrders } from '@/lib/orders';
 
 export default function DashboardPage() {
   const [counts, setCounts] = useState({
     categories: 0,
     regions: 0,
     products: 0,
-    users:0,
+    users: 0,
+    orders: 0,
   });
 
   useEffect(() => {
     const loadCounts = async () => {
       try {
-        const [c, r, p , u] = await Promise.all([
+        const [c, r, p, u, o] = await Promise.all([
           getCategories(),
           getRegions(),
           getProducts(),
           getUsers(),
+          getAllOrders(),
         ]);
 
         setCounts({
@@ -30,6 +33,7 @@ export default function DashboardPage() {
           regions: r.data.length,
           products: p.data.length,
           users: u.data.length,
+          orders: o.data.length,
         });
       } catch (err) {
         console.error('Failed to load dashboard counts', err);
@@ -91,6 +95,17 @@ export default function DashboardPage() {
             Users
           </h2>
           <p className="text-xl font-bold mt-2">{counts.users}</p>
+        </Link>
+
+        {/* orders */}
+        <Link
+          href="/dashboard/orders"
+          className="rounded-xl bg-slate-50 p-6 border block hover:border-indigo-600 transition"
+        >
+          <h2 className="text-2xl font-bold text-black hover:text-indigo-600 transition">
+            Orders
+          </h2>
+          <p className="text-xl font-bold mt-2">{counts.orders}</p>
         </Link>
 
       </div>
