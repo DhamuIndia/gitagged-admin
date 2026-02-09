@@ -37,12 +37,14 @@ export default function OrdersPage() {
 
         <h1 className="text-2xl font-semibold mb-6">Orders</h1>
 
-        <div className="bg-white rounded-xl shadow p-6">
+        <div className="bg-white rounded-xl shadow p-6 overflow-x-auto no-scrollbar">
           <table className="w-full border">
             <thead>
               <tr>
                 <th className="border p-2 bg-gray-100">Order ID</th>
-                <th className="border p-2 bg-gray-100">User</th>
+                <th className="border p-2 bg-gray-100">Name</th>
+                <th className="border p-2 bg-gray-100">Phone</th>
+                <th className="border p-2 bg-gray-100">Address</th>
                 <th className="border p-2 bg-gray-100">Amount</th>
                 <th className="border p-2 bg-gray-100">Status</th>
                 <th className="border p-2 bg-gray-100">Created</th>
@@ -53,24 +55,23 @@ export default function OrdersPage() {
             <tbody>
               {orders.map(order => (
                 <tr key={order._id}>
-                  <td className="border p-2 text-center">
+                  <td className="border p-2 text-center whitespace-nowrap">
                     {order._id.slice(-6)}
                   </td>
 
-                  <td className="border p-2 text-center">
-                    <div className="font-medium">
+                  <td className="border p-2 text-center whitespace-nowrap">
                       {order.userId?.name || '—'}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {order.userId?.email}
-                    </div>
                   </td>
 
-                  <td className="border p-2 text-center font-semibold">
+                  <td className='border p-2 text-center whitespace-nowrap'>{order.userId?.phone ||'—'}</td>
+
+                  <td className='border p-2 text-center whitespace-nowrap'>{order.userId?.address ||'—'}</td>
+
+                  <td className="border p-2 text-center font-semibold whitespace-nowrap">
                     ₹{order.totalAmount}
                   </td>
 
-                  <td className="border p-2 text-center">
+                  <td className="border p-2 text-center whitespace-nowrap">
                     <span
                       className={`px-3 py-1 rounded-full text-sm ${STATUS_COLORS[order.status]}`}
                     >
@@ -78,11 +79,11 @@ export default function OrdersPage() {
                     </span>
                   </td>
 
-                  <td className="border p-2 text-center text-sm">
+                  <td className="border p-2 text-center text-sm whitespace-nowrap">
                     {new Date(order.createdAt).toLocaleDateString()}
                   </td>
 
-                  <td className="border p-2 text-center">
+                  <td className="border p-2 text-center whitespace-nowrap">
                     <select
                       value={order.status}
                       onChange={(e) =>

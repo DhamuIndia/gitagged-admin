@@ -149,9 +149,9 @@ export default function ProductsPage() {
   };
 
   const getCategoryNames = (categories: any[]) => {
-  if (!Array.isArray(categories)) return '';
-  return categories.map(c => c.name).join(', ');
-};
+    if (!Array.isArray(categories)) return '';
+    return categories.map(c => c.name).join(', ');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -451,33 +451,35 @@ export default function ProductsPage() {
         {/* LIST */}
         <div className="bg-white rounded-xl shadow p-6">
           <h2 className="font-semibold mb-4">Product List</h2>
-          <table className="w-full border">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="border p-2">Title</th>
-                <th className="border p-2">Price</th>
-                <th className="border p-2">Stock</th>
-                <th className="border p-2">Category</th>
-                <th className="border p-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map(p => (
-                <tr key={p._id} className="hover:bg-gray-50">
-                  <td className="border p-2 text-center">{p.title}</td>
-                  <td className="border p-2 text-center">₹{p.price}</td>
-                  <td className="border p-2 text-center">{p.stock}</td>
-                  <td className="border p-2 text-center">
-                    {getCategoryNames(p.categories)}
-                  </td>
-                  <td className="border p-2 text-center">
-                    <button onClick={() => edit(p)} className="text-blue-600 mr-3">Edit</button>
-                    <button onClick={() => remove(p._id)} className="text-red-600">Delete</button>
-                  </td>
+          <div className='overflow-x-auto no-scrollbar'>
+            <table className="w-full border">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="border p-2">Title</th>
+                  <th className="border p-2">Price</th>
+                  <th className="border p-2">Stock</th>
+                  <th className="border p-2">Category</th>
+                  <th className="border p-2">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {products.map(p => (
+                  <tr key={p._id} className="hover:bg-gray-50">
+                    <td className="border p-2 text-center whitespace-nowrap">{p.title}</td>
+                    <td className="border p-2 text-center whitespace-nowrap">₹{p.price}</td>
+                    <td className="border p-2 text-center whitespace-nowrap">{p.stock}</td>
+                    <td className="border p-2 text-center whitespace-nowrap">
+                      {getCategoryNames(p.categories)}
+                    </td>
+                    <td className="border p-2 text-center whitespace-nowrap">
+                      <button onClick={() => edit(p)} className="text-blue-600 mr-3">Edit</button>
+                      <button onClick={() => remove(p._id)} className="text-red-600">Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
