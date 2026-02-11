@@ -108,14 +108,14 @@ export default function ProductsPage() {
     setEditingId(p._id);
     setForm({
       title: p.title,
-      price: p.price,
-      stock: p.stock,
+      price: String(p.price ?? ''),
+      stock: String(p.stock ?? ''),
       description: p.description,
-      discountPercentage: p.discountPercentage,
+      discountPercentage: String(p.discountPercentage ?? ''),
       images: p.images || [],
       categories: p.categories || [],
       giRegions: p.giRegions || [],
-      status: p.status,
+      status: p.status || 'active',
     });
     const attrs =
       p.attributes && Object.keys(p.attributes).length > 0
@@ -202,7 +202,7 @@ export default function ProductsPage() {
                 <input
                   type="number"
                   id='discountLabel'
-                  value={form.discountPercentage}
+                  value={form.discountPercentage??''}
                   onChange={e => setForm({ ...form, discountPercentage: e.target.value })}
                   className="border rounded-lg px-3 py-2"
                 />

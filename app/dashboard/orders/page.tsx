@@ -45,6 +45,7 @@ export default function OrdersPage() {
                 <th className="border p-2 bg-gray-100">Name</th>
                 <th className="border p-2 bg-gray-100">Phone</th>
                 <th className="border p-2 bg-gray-100">Address</th>
+                <th className='border p-2 bg-gray-100'>Product and Quantity</th>
                 <th className="border p-2 bg-gray-100">Amount</th>
                 <th className="border p-2 bg-gray-100">Status</th>
                 <th className="border p-2 bg-gray-100">Created</th>
@@ -60,14 +61,22 @@ export default function OrdersPage() {
                   </td>
 
                   <td className="border p-2 text-center whitespace-nowrap">
-                      {order.userId?.name || '—'}
+                    {order.userId?.name || '—'}
                   </td>
 
-                  <td className='border p-2 text-center whitespace-nowrap'>{order.userId?.phone ||'—'}</td>
+                  <td className='border p-2 text-center whitespace-nowrap'>{order.userId?.phone || '—'}</td>
 
-                  <td className='border p-2 text-center whitespace-nowrap'>{order.userId?.address ||'—'}</td>
+                  <td className='border p-2 text-center whitespace-nowrap'>{order.userId?.address || '—'}</td>
 
-                  <td className="border p-2 text-center font-semibold whitespace-nowrap">
+                  <td className='border p-2 text-center whitespace-nowrap'>
+                    {order.items?.map((item: any) => (
+                      <div key={item._id}>
+                        {item.productId?.title} × {item.quantity}
+                      </div>
+                    ))}
+                  </td>
+
+                  <td className="border p-2 text-center whitespace-nowrap">
                     ₹{order.totalAmount}
                   </td>
 

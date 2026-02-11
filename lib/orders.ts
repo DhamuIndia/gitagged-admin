@@ -14,10 +14,10 @@ API.interceptors.request.use((config) => {
 });
 
 export const getAllOrders = () =>
-  API.get('/admin/orders');
+  API.get('/orders/admin/all');
 
 export const updateOrderStatus = (
   orderId: string,
   status: string
 ) =>
-  API.patch(`/admin/orders/${orderId}/status`, { status });
+  API.patch(`/orders/${orderId}/status`, { status });
