@@ -41,6 +41,11 @@ export default function DashboardPage() {
     };
 
     loadCounts();
+    const interval = setInterval(() => {
+    loadCounts();
+  }, 3000); // every 3 seconds
+
+  return () => clearInterval(interval);
   }, []);
 
   return (
@@ -49,7 +54,7 @@ export default function DashboardPage() {
         Welcome back 👋
       </h1>
       <p className="text-slate-600">
-        Manage products, categories and GI regions from here.
+        Manage products, orders and users from here.
       </p>
 
       <div className="grid grid-cols-3 gap-6 mt-8">

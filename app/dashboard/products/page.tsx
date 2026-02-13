@@ -33,6 +33,11 @@ export default function ProductsPage() {
 
   useEffect(() => {
     load();
+    const interval = setInterval(() => {
+    load();
+  }, 3000); // every 3 seconds
+
+  return () => clearInterval(interval);
   }, []);
 
   const load = async () => {
