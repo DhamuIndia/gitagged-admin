@@ -7,6 +7,7 @@ import { getRegions } from '@/lib/gi-regions';
 import { getProducts } from '@/lib/products';
 import { getUsers } from '@/lib/users';
 import { getAllOrders } from '@/lib/orders';
+import { getAllSellers } from '@/lib/sellers';
 
 export default function DashboardPage() {
   const [counts, setCounts] = useState({
@@ -15,17 +16,19 @@ export default function DashboardPage() {
     products: 0,
     users: 0,
     orders: 0,
+    sellers: 0,
   });
 
   useEffect(() => {
     const loadCounts = async () => {
       try {
-        const [c, r, p, u, o] = await Promise.all([
+        const [c, r, p, u, o, s] = await Promise.all([
           getCategories(),
           getRegions(),
           getProducts(),
           getUsers(),
           getAllOrders(),
+          getAllSellers(),
         ]);
 
         setCounts({
@@ -34,6 +37,7 @@ export default function DashboardPage() {
           products: p.data.length,
           users: u.data.length,
           orders: o.data.length,
+          sellers: s.data.length,
         });
       } catch (err) {
         console.error('Failed to load dashboard counts', err);
@@ -42,10 +46,10 @@ export default function DashboardPage() {
 
     loadCounts();
     const interval = setInterval(() => {
-    loadCounts();
-  }, 3000); // every 3 seconds
+      loadCounts();
+    }, 3000); // every 3 seconds
 
-  return () => clearInterval(interval);
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -54,7 +58,7 @@ export default function DashboardPage() {
         Welcome back 👋
       </h1>
       <p className="text-slate-600">
-        Manage products, orders and users from here.
+        Here's a quick overview of your platform's stats.
       </p>
 
       <div className="grid grid-cols-3 gap-6 mt-8">
@@ -111,6 +115,17 @@ export default function DashboardPage() {
             Orders
           </h2>
           <p className="text-xl font-bold mt-2">{counts.orders}</p>
+        </Link>
+
+        {/* sellers */}
+        <Link
+          href="/dashboard/sellers"
+          className="rounded-xl bg-slate-50 p-6 border block hover:border-indigo-600 transition"
+        >
+          <h2 className="text-2xl font-bold text-black hover:text-indigo-600 transition">
+            Sellers
+          </h2>
+          <p className="text-xl font-bold mt-2">{counts.sellers}</p>
         </Link>
 
       </div>

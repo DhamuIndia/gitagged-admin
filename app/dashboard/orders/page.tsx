@@ -16,15 +16,17 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    loadOrders();
-    const interval = setInterval(() => {
-    loadOrders();
-  }, 3000); // every 3 seconds
+  // useEffect(() => {
+  //   loadOrders();
+  //   const interval = setInterval(() => {
+  //   loadOrders();
+  // }, 3000); // every 3 seconds
 
-  return () => clearInterval(interval);
+  // return () => clearInterval(interval);
+  // }, []);
+    useEffect(() => {
+    loadOrders();
   }, []);
-
   const loadOrders = async () => {
     setLoading(true);
     const res = await getAllOrders();

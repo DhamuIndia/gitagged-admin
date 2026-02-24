@@ -78,11 +78,18 @@ export default function DashboardLayout({
             👤 Users
           </Link>
 
-           <Link
+          <Link
             href="/dashboard/orders"
             className={linkClass('/dashboard/orders')}
           >
             📦 Orders
+          </Link>
+
+          <Link
+            href="/dashboard/sellers"
+            className={linkClass('/dashboard/sellers')}
+          >
+          👨🏽‍💼 Sellers
           </Link>
 
         </nav>

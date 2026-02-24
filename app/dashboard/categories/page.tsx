@@ -12,6 +12,7 @@ import { uploadCategoryImage } from '@/lib/upload';
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showModel, setShowModel] = useState(false);
 
   useEffect(() => {
     loadCategories();
@@ -53,6 +54,7 @@ export default function CategoriesPage() {
 
     reset();
     loadCategories();
+    setShowModel(false);
   };
 
   const reset = () => {
@@ -69,6 +71,7 @@ export default function CategoriesPage() {
       parentId: cat.parentId || '',
       image: cat.image || '',
     });
+    setShowModel(true);
   };
 
   const remove = async (id: string) => {
@@ -81,23 +84,6 @@ export default function CategoriesPage() {
 
   const getCategoryById = (id: string) =>
     categories.find(c => c._id === id);
-
-  // const getCategoryPath = (category: any): string[] => {
-  //   const path = [category.name];
-  //   let current = category;
-
-  //   while (current.parentId) {
-  //     const parent = getCategoryById(current.parentId);
-  //     if (!parent) break;
-  //     path.unshift(parent.name);
-  //     current = parent;
-  //   }
-
-  //   return path;
-  // };
-
-  // const getCategoryById = (id: string) =>
-  // categories.find(c => c._id === id);
 
   const resolveLevels = (category: any) => {
     let main = '-';
@@ -132,105 +118,18 @@ export default function CategoriesPage() {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
 
-        <h1 className="text-2xl font-semibold mb-6">Categories</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-semibold">Categories</h1>
 
-        {/* FORM CARD */}
-        <div className="bg-white rounded-xl shadow p-6 mb-10">
-          <div className="grid md:grid-cols-3 gap-6">
-
-            {/* LEFT */}
-            <div className="md:col-span-2 space-y-4">
-
-              {/* Category Name */}
-              <div>
-                <label className="font-medium block mb-1">Category Name</label>
-                <input
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2"
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="font-medium block mb-1" htmlFor='descriptionLabel'>Description</label>
-                <textarea
-                  id='descriptionLabel'
-                  value={form.description || ''}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2 resize-none"
-                />
-              </div>
-
-              {/* Parent Category */}
-              <div>
-                <label className="font-medium block mb-1">Parent Category</label>
-                <select
-                  value={form.parentId}
-                  onChange={(e) => setForm({ ...form, parentId: e.target.value })}
-                  className="w-full border rounded-lg px-3 py-2"
-                >
-                  <option value="">No Parent (Main Category)</option>
-                  {categories
-                    .filter(c => c._id !== editingId) // prevent self-parent
-                    .map(c => (
-                      <option key={c._id} value={c._id}>
-                        {c.name}
-                      </option>
-                    ))}
-                </select>
-              </div>
-            </div>
-
-            {/* RIGHT – IMAGE */}
-            <div className="space-y-4">
-              <h3 className="font-medium">Category Media</h3>
-
-              <div
-                onClick={() =>
-                  document.getElementById('category-image-input')?.click()
-                }
-                className="relative border-2 border-dashed rounded-xl h-56 cursor-pointer flex items-center justify-center bg-gray-50 hover:bg-gray-100"
-              >
-                {!form.image && (
-                  <div className="text-center text-gray-500">
-                    <p className="font-medium">Upload Image</p>
-                    <p className="text-sm">PNG, JPG supported</p>
-                  </div>
-                )}
-
-                {form.image && (
-                  <img
-                    src={form.image}
-                    className="absolute w-40 h-40 object-cover rounded-lg border shadow"
-                  />
-                )}
-              </div>
-
-              <input
-                key={imageInputKey}
-                id="category-image-input"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={async (e) => {
-                  if (!e.target.files?.[0]) return;
-                  const res = await uploadCategoryImage(e.target.files[0]);
-                  setForm(prev => ({ ...prev, image: res.data.url }));
-                }}
-              />
-            </div>
-
-          </div>
-          {/* Save Button */}
-          <div className="flex justify-center pt-4">
-            <button
-              onClick={save}
-              className="bg-indigo-600 text-white px-20 py-2 rounded-lg"
-            >
-              {editingId ? 'Update Category' : 'Add Category'}
-            </button>
-          </div>
+          <button
+            onClick={() => {
+              reset();
+              setShowModel(true);
+            }}
+            className="bg-indigo-600 text-white px-6 py-2 rounded-lg shadow hover:bg-indigo-700 transition"
+          >
+            + Add Category
+          </button>
         </div>
 
         {/* LIST */}
@@ -271,7 +170,124 @@ export default function CategoriesPage() {
             </table>
           </div>
         </div>
+        {showModel && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 
+            <div className="bg-gray-50 w-full max-w-2xl rounded-xl shadow-2xl p-6 relative">
+
+              {/* Close Button */}
+              <button
+                onClick={() => setShowModel(false)}
+                className="absolute top-4 right-4 text-gray-500 hover:text-black"
+              >
+                ✕
+              </button>
+
+              <h2 className="text-xl font-semibold mb-4">
+                {editingId ? 'Edit Category' : 'Add Category'}
+              </h2>
+
+              {/* FORM CARD */}
+              <div className="bg-white rounded-xl shadow p-6 mb-10">
+                <div className="grid md:grid-cols-3 gap-6">
+
+                  {/* LEFT */}
+                  <div className="md:col-span-2 space-y-4">
+
+                    {/* Category Name */}
+                    <div>
+                      <label className="font-medium block mb-1">Category Name</label>
+                      <input
+                        value={form.name}
+                        onChange={(e) => setForm({ ...form, name: e.target.value })}
+                        className="w-full border rounded-lg px-3 py-2"
+                      />
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                      <label className="font-medium block mb-1" htmlFor='descriptionLabel'>Description</label>
+                      <textarea
+                        id='descriptionLabel'
+                        value={form.description || ''}
+                        onChange={(e) => setForm({ ...form, description: e.target.value })}
+                        className="w-full border rounded-lg px-3 py-2 resize-none"
+                      />
+                    </div>
+
+                    {/* Parent Category */}
+                    <div>
+                      <label className="font-medium block mb-1">Parent Category</label>
+                      <select
+                        value={form.parentId}
+                        onChange={(e) => setForm({ ...form, parentId: e.target.value })}
+                        className="w-full border rounded-lg px-3 py-2"
+                      >
+                        <option value="">No Parent (Main Category)</option>
+                        {categories
+                          .filter(c => c._id !== editingId) // prevent self-parent
+                          .map(c => (
+                            <option key={c._id} value={c._id}>
+                              {c.name}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* RIGHT – IMAGE */}
+                  <div className="space-y-4">
+                    <h3 className="font-medium">Category Media</h3>
+
+                    <div
+                      onClick={() =>
+                        document.getElementById('category-image-input')?.click()
+                      }
+                      className="relative border-2 border-dashed rounded-xl h-56 cursor-pointer flex items-center justify-center bg-gray-50 hover:bg-gray-100"
+                    >
+                      {!form.image && (
+                        <div className="text-center text-gray-500">
+                          <p className="font-medium">Upload Image</p>
+                          <p className="text-sm">PNG, JPG supported</p>
+                        </div>
+                      )}
+
+                      {form.image && (
+                        <img
+                          src={form.image}
+                          className="absolute w-40 h-40 object-cover rounded-lg border shadow"
+                        />
+                      )}
+                    </div>
+
+                    <input
+                      key={imageInputKey}
+                      id="category-image-input"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        if (!e.target.files?.[0]) return;
+                        const res = await uploadCategoryImage(e.target.files[0]);
+                        setForm(prev => ({ ...prev, image: res.data.url }));
+                      }}
+                    />
+                  </div>
+
+                </div>
+                {/* Save Button */}
+                <div className="flex justify-center pt-4">
+                  <button
+                    onClick={save}
+                    className="bg-indigo-600 text-white px-20 py-2 rounded-lg"
+                  >
+                    {editingId ? 'Update Category' : 'Add Category'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

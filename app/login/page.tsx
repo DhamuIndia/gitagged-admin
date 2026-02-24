@@ -22,7 +22,7 @@ export default function LoginPage() {
     try {
       const res = await axios.post(
         'http://localhost:3002/admin-auth/login',
-        { email, password },
+        { emailOrUserName: email, password },
         { headers: { 'Content-Type': 'application/json' } }
       );
 
@@ -33,36 +33,10 @@ export default function LoginPage() {
     }
   };
 
-  // return (
-  //   <div className="p-10 max-w-sm mx-auto">
-  //     <h1 className="text-xl font-bold mb-4 text-center">Admin Login</h1>
+  const forgotPass = async () => {
 
-  //     <input
-  //       className="border p-2 w-full mb-2 text-center"
-  //       placeholder="Email / UserName"
-  //       value={email}
-  //       onChange={(e) => setEmail(e.target.value)}
-  //       autoComplete="off"
-  //     />
+  };
 
-  //     <input
-  //       className="border p-2 w-full mb-4 text-center"
-  //       type="password"
-  //       placeholder="Password"
-  //       value={password}
-  //       onChange={(e) => setPassword(e.target.value)}
-  //       autoComplete="new-password"
-  //     />
-
-  //     <button
-  //       onClick={handleLogin}
-  //       className="bg-black text-white px-4 py-2 w-full"
-  //     >
-  //       Login
-  //     </button>
-  //   </div>
-  // );
-  
   return (
     <div className="min-h-screen flex items-center justify-center bg-black">
 
@@ -75,10 +49,9 @@ export default function LoginPage() {
 
         {/* EMAIL */}
         <div className="mb-4">
-          <label className="block text-sm mb-1">Email</label>
+          <label className="block text-sm mb-1">UserName / Email</label>
           <input
             type="email"
-            // placeholder="UserName or Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
@@ -90,14 +63,15 @@ export default function LoginPage() {
           <label className="block text-sm mb-1">Password</label>
           <input
             type="password"
-            // placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
           />
         </div>
 
-        <div className="text-sm mb-6 cursor-pointer hover:underline">
+        <div
+          onClick={forgotPass}
+          className="text-sm mb-6 cursor-pointer hover:underline">
           Forgot password?
         </div>
 
