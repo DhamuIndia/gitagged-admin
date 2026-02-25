@@ -94,6 +94,12 @@ export default function SellersPage() {
                   </td>
 
                   <td className="border p-2 text-center whitespace-nowrap">
+                     <button
+                      onClick={() => setSelectedSeller(s)}
+                      className="text-blue-600 pr-4"
+                    >
+                      View
+                    </button>
                     <select
                       value={s.status}
                       onChange={(e) => changeStatus(s._id, e.target.value)}
@@ -104,33 +110,6 @@ export default function SellersPage() {
                       <option value="REJECTED">REJECTED</option>
                     </select>
                   </td>
-
-                  {/* <td className="border p-2 text-center space-x-2">
-                    <button
-                      onClick={() => setSelectedSeller(s)}
-                      className="text-blue-600"
-                    >
-                      View
-                    </button>
-
-                    {s.status === 'PENDING' && (
-                      <>
-                        <button
-                          onClick={() => approve(s._id)}
-                          className="text-green-600"
-                        >
-                          Approve
-                        </button>
-
-                        <button
-                          onClick={() => reject(s._id)}
-                          className="text-red-600"
-                        >
-                          Reject
-                        </button>
-                      </>
-                    )}
-                  </td> */}
                 </tr>
               ))}
             </tbody>
