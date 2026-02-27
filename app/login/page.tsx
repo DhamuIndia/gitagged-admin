@@ -21,20 +21,18 @@ export default function LoginPage() {
   const handleLogin = async () => {
     try {
       const res = await axios.post(
-        'http://localhost:3002/admin-auth/login',
-        { emailOrUserName: email, password },
+        // 'http://localhost:3002/admin-auth/login',
+        'http://localhost:3002/auth/login',
+        { email: email, password },
         { headers: { 'Content-Type': 'application/json' } }
       );
 
-      localStorage.setItem('adminToken', res.data.accessToken);
+      localStorage.setItem('token', res.data.accessToken);
+      localStorage.setItem('role', res.data.role);
       router.push('/dashboard');
     } catch (err: any) {
       alert(err.response?.data?.message || 'Login failed');
     }
-  };
-
-  const forgotPass = async () => {
-
   };
 
   return (
@@ -70,7 +68,7 @@ export default function LoginPage() {
         </div>
 
         <div
-          onClick={forgotPass}
+          onClick={() => router.push('/forgot-password')}
           className="text-sm mb-6 cursor-pointer hover:underline">
           Forgot password?
         </div>
