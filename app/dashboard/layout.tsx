@@ -12,13 +12,16 @@ export default function DashboardLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
     if (!token) {
       router.push('/login');
       return;
     }
+    setRole(role);
     setLoading(false);
   }, [router]);
 
@@ -45,24 +48,28 @@ export default function DashboardLayout({
             <h1 className="text-2xl font-bold tracking-wide hover:text-indigo-400 transition">
               GiTagged
             </h1>
-            <p className="text-sm text-slate-400">Admin Dashboard</p>
+            <p className="text-sm text-slate-400">{role == 'ADMIN' ? 'Admin' : 'Seller'} Dashboard</p>
           </Link>
         </div>
 
         <nav>
-          <Link
-            href="/dashboard/categories"
-            className={linkClass('/dashboard/categories')}
-          >
-            📂 Categories
-          </Link>
+          {
+            role == 'ADMIN' && (<Link
+              href="/dashboard/categories"
+              className={linkClass('/dashboard/categories')}
+            >
+              📂 Categories
+            </Link>)
+          }
 
-          <Link
-            href="/dashboard/gi-regions"
-            className={linkClass('/dashboard/gi-regions')}
-          >
-            🌍 GI Regions
-          </Link>
+          {
+            role == 'ADMIN' && (<Link
+              href="/dashboard/gi-regions"
+              className={linkClass('/dashboard/gi-regions')}
+            >
+              🌍 GI Regions
+            </Link>)
+          }
 
           <Link
             href="/dashboard/products"
@@ -71,12 +78,16 @@ export default function DashboardLayout({
             🛒 Products
           </Link>
 
-          <Link
-            href="/dashboard/users"
-            className={linkClass('/dashboard/users')}
-          >
-            👤 Users
-          </Link>
+          {
+            role == 'ADMIN' && (
+              <Link
+                href="/dashboard/users"
+                className={linkClass('/dashboard/users')}
+              >
+                👤 Users
+              </Link>
+            )
+          }
 
           <Link
             href="/dashboard/orders"
@@ -85,12 +96,16 @@ export default function DashboardLayout({
             📦 Orders
           </Link>
 
-          <Link
-            href="/dashboard/sellers"
-            className={linkClass('/dashboard/sellers')}
-          >
-          👨🏽‍💼 Sellers
-          </Link>
+          {
+            role == 'ADMIN' && (
+              <Link
+                href="/dashboard/sellers"
+                className={linkClass('/dashboard/sellers')}
+              >
+                👨🏽‍💼 Sellers
+              </Link>
+            )
+          }
 
         </nav>
       </aside>

@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
         auth,
         'recaptcha-container',
         {
-          size: 'normal',
+          size: 'invisible',
         }
       );
 

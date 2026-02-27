@@ -11,6 +11,9 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
+    // remove the old token and role..
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
     setMounted(true);
   }, []);
 

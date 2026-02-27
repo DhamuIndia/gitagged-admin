@@ -19,7 +19,11 @@ export default function DashboardPage() {
     sellers: 0,
   });
 
+  const [role, setRole] = useState<string | null>(null);
+
   useEffect(() => {
+    const role = localStorage.getItem('role');
+    setRole(role);
     const loadCounts = async () => {
       try {
         const [c, r, p, u, o, s] = await Promise.all([
@@ -63,26 +67,30 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-3 gap-6 mt-8">
         {/* Categories */}
-        <Link
-          href="/dashboard/categories"
-          className="rounded-xl bg-slate-50 p-6 border block hover:border-indigo-600 transition"
-        >
-          <h2 className="text-2xl font-bold text-black hover:text-indigo-600 transition">
-            Categories
-          </h2>
-          <p className="text-xl font-bold mt-2">{counts.categories}</p>
-        </Link>
+        {
+          role == 'ADMIN' && (<Link
+            href="/dashboard/categories"
+            className="rounded-xl bg-slate-50 p-6 border block hover:border-indigo-600 transition"
+          >
+            <h2 className="text-2xl font-bold text-black hover:text-indigo-600 transition">
+              Categories
+            </h2>
+            <p className="text-xl font-bold mt-2">{counts.categories}</p>
+          </Link>)
+        }
 
         {/* GI Regions */}
-        <Link
-          href="/dashboard/gi-regions"
-          className="rounded-xl bg-slate-50 p-6 border block hover:border-indigo-600 transition"
-        >
-          <h2 className="text-2xl font-bold text-black hover:text-indigo-600 transition">
-            GI Regions
-          </h2>
-          <p className="text-xl font-bold mt-2">{counts.regions}</p>
-        </Link>
+        {
+          role == 'ADMIN' && (<Link
+            href="/dashboard/gi-regions"
+            className="rounded-xl bg-slate-50 p-6 border block hover:border-indigo-600 transition"
+          >
+            <h2 className="text-2xl font-bold text-black hover:text-indigo-600 transition">
+              GI Regions
+            </h2>
+            <p className="text-xl font-bold mt-2">{counts.regions}</p>
+          </Link>)
+        }
 
         {/* Products */}
         <Link
@@ -96,15 +104,17 @@ export default function DashboardPage() {
         </Link>
 
         {/* Users */}
-        <Link
-          href="/dashboard/users"
-          className="rounded-xl bg-slate-50 p-6 border block hover:border-indigo-600 transition"
-        >
-          <h2 className="text-2xl font-bold text-black hover:text-indigo-600 transition">
-            Users
-          </h2>
-          <p className="text-xl font-bold mt-2">{counts.users}</p>
-        </Link>
+        {
+          role == 'ADMIN' && (<Link
+            href="/dashboard/users"
+            className="rounded-xl bg-slate-50 p-6 border block hover:border-indigo-600 transition"
+          >
+            <h2 className="text-2xl font-bold text-black hover:text-indigo-600 transition">
+              Users
+            </h2>
+            <p className="text-xl font-bold mt-2">{counts.users}</p>
+          </Link>)
+        }
 
         {/* orders */}
         <Link
@@ -118,15 +128,17 @@ export default function DashboardPage() {
         </Link>
 
         {/* sellers */}
-        <Link
-          href="/dashboard/sellers"
-          className="rounded-xl bg-slate-50 p-6 border block hover:border-indigo-600 transition"
-        >
-          <h2 className="text-2xl font-bold text-black hover:text-indigo-600 transition">
-            Sellers
-          </h2>
-          <p className="text-xl font-bold mt-2">{counts.sellers}</p>
-        </Link>
+        {
+          role == 'ADMIN' && (<Link
+            href="/dashboard/sellers"
+            className="rounded-xl bg-slate-50 p-6 border block hover:border-indigo-600 transition"
+          >
+            <h2 className="text-2xl font-bold text-black hover:text-indigo-600 transition">
+              Sellers
+            </h2>
+            <p className="text-xl font-bold mt-2">{counts.sellers}</p>
+          </Link>)
+        }
 
       </div>
     </div>
