@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getProducts, createProduct, updateProduct, deleteProduct } from '@/lib/products';
+import { getProducts, createProduct, updateProduct, deleteProduct, getSellerProducts } from '@/lib/products';
 import { getCategories } from '@/lib/categories';
 import { getRegions } from '@/lib/gi-regions';
 import { uploadProductImage } from '@/lib/upload';
@@ -15,7 +15,7 @@ export default function ProductsPage() {
   const [showRegions, setShowRegions] = useState(false);
 
   const [showImageModal, setShowImageModal] = useState(false);
-
+  const [role, setRole] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     title: '',
@@ -32,21 +32,42 @@ export default function ProductsPage() {
   const [attributes, setAttributes] = useState([{ key: '', value: '' }]);
 
   useEffect(() => {
-    load();
-    const interval = setInterval(() => {
-    load();
-  }, 3000); // every 3 seconds
+    const storedRole = localStorage.getItem('role');
+    setRole(storedRole);
+    load(storedRole);
+    // const interval = setInterval(() => {
+    //   load();
+    // }, 3000); // every 3 seconds
 
-  return () => clearInterval(interval);
+    // return () => clearInterval(interval);
   }, []);
 
-  const load = async () => {
-    const [p, c, r] = await Promise.all([
-      getProducts(),
+  const load = async (roleParam?: string | null) => {
+    const roleValue = roleParam ?? role;
+    // const [ c, r, ] = await Promise.all([
+    //   getProducts(),
+    //   getCategories(),
+    //   getRegions(),
+    //   getSellerProducts(),
+    // ]);
+    // setProducts(p.data);
+    // setCategories(c.data);
+    // setRegions(r.data);
+    // setSellerProducts(s.data);
+    let productResponse;
+
+    if (roleValue === 'ADMIN') {
+      productResponse = await getProducts();
+    } else {
+      productResponse = await getSellerProducts();
+    }
+
+    const [c, r] = await Promise.all([
       getCategories(),
       getRegions(),
     ]);
-    setProducts(p.data);
+
+    setProducts(productResponse.data);
     setCategories(c.data);
     setRegions(r.data);
   };
@@ -207,7 +228,7 @@ export default function ProductsPage() {
                 <input
                   type="number"
                   id='discountLabel'
-                  value={form.discountPercentage??''}
+                  value={form.discountPercentage ?? ''}
                   onChange={e => setForm({ ...form, discountPercentage: e.target.value })}
                   className="border rounded-lg px-3 py-2"
                 />

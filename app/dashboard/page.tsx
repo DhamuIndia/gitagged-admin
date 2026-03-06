@@ -22,26 +22,41 @@ export default function DashboardPage() {
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
-    const role = localStorage.getItem('role');
-    setRole(role);
+    const storedRole = localStorage.getItem('role');
+    setRole(storedRole);
     const loadCounts = async () => {
       try {
-        const [c, r, p, u, o, s] = await Promise.all([
+        // const [c, r, p, u, o, s] = await Promise.all([
+        //   getCategories(),
+        //   getRegions(),
+        //   getProducts(),
+        //   getUsers(),
+        //   getAllOrders(),
+        //   getAllSellers(),
+        // ]);
+        let users = { data: [] };
+        let sellers = { data: [] };
+
+        if (storedRole === 'ADMIN') {
+          users = await getUsers();
+          sellers = await getAllSellers();
+        }
+
+        const [c, r, p, o] = await Promise.all([
           getCategories(),
           getRegions(),
           getProducts(),
-          getUsers(),
           getAllOrders(),
-          getAllSellers(),
         ]);
 
         setCounts({
           categories: c.data.length,
           regions: r.data.length,
           products: p.data.length,
-          users: u.data.length,
-          orders: o.data.length,
-          sellers: s.data.length,
+          users: users.data.length,
+          // orders: o.data.length,
+          orders: o?.data?.length || 0,
+          sellers: sellers.data.length,
         });
       } catch (err) {
         console.error('Failed to load dashboard counts', err);
@@ -49,11 +64,9 @@ export default function DashboardPage() {
     };
 
     loadCounts();
-    const interval = setInterval(() => {
-      loadCounts();
-    }, 3000); // every 3 seconds
+    // const interval = setInterval(loadCounts, 3000); // every 3 seconds
 
-    return () => clearInterval(interval);
+    // return () => clearInterval(interval);
   }, []);
 
   return (

@@ -12,8 +12,14 @@ export default function LoginPage() {
 
   useEffect(() => {
     // remove the old token and role..
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
+    // localStorage.removeItem('token');
+    // localStorage.removeItem('role');
+    localStorage.clear();
+    // prevent browser back navigation
+    window.history.pushState(null, '', window.location.href);
+    window.onpopstate = function () {
+      window.history.pushState(null, '', window.location.href);
+    };
     setMounted(true);
   }, []);
 
@@ -26,12 +32,21 @@ export default function LoginPage() {
       const res = await axios.post(
         // 'http://localhost:3002/admin-auth/login',
         'http://localhost:3002/auth/login',
-        { email: email, password },
+        { identifier: email, password },
         { headers: { 'Content-Type': 'application/json' } }
       );
 
-      localStorage.setItem('token', res.data.accessToken);
+      // localStorage.setItem('token', res.data.accessToken);
+      // localStorage.setItem('role', res.data.role);
       localStorage.setItem('role', res.data.role);
+
+      if (res.data.role === 'ADMIN') {
+        localStorage.setItem('adminToken', res.data.accessToken);
+      }
+
+      if (res.data.role === 'SELLER') {
+        localStorage.setItem('sellerToken', res.data.accessToken);
+      }
       router.push('/dashboard');
     } catch (err: any) {
       alert(err.response?.data?.message || 'Login failed');

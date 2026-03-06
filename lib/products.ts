@@ -20,3 +20,6 @@ export const updateProduct = (id: string, data: any) =>
 
 export const deleteProduct = (id: string) =>
   api.delete(`/products/${id}`);
+
+export const getSellerProducts = () =>
+  api.get('/products/seller/my-products');
