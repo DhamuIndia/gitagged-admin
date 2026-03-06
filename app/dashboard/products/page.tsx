@@ -44,16 +44,7 @@ export default function ProductsPage() {
 
   const load = async (roleParam?: string | null) => {
     const roleValue = roleParam ?? role;
-    // const [ c, r, ] = await Promise.all([
-    //   getProducts(),
-    //   getCategories(),
-    //   getRegions(),
-    //   getSellerProducts(),
-    // ]);
-    // setProducts(p.data);
-    // setCategories(c.data);
-    // setRegions(r.data);
-    // setSellerProducts(s.data);
+  
     let productResponse;
 
     if (roleValue === 'ADMIN') {
