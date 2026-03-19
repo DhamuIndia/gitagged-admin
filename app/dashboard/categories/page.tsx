@@ -118,6 +118,7 @@ export default function CategoriesPage() {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
 
+        {/* header and button container!! */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold">Categories</h1>
 
@@ -170,10 +171,12 @@ export default function CategoriesPage() {
             </table>
           </div>
         </div>
+
+        {/* pop up feilds!! */}
         {showModel && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 
-            <div className="bg-gray-50 w-full max-w-2xl rounded-xl shadow-2xl p-6 relative">
+            <div className="bg-gray-50 w-full max-w-5xl rounded-xl shadow-2xl p-6 relative">
 
               {/* Close Button */}
               <button
