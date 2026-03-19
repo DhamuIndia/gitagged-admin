@@ -19,19 +19,36 @@ export default function OrdersPage() {
   useEffect(() => {
     loadOrders();
     const interval = setInterval(() => {
-    loadOrders();
-  }, 3000); // every 3 seconds
+      loadOrders();
+    }, 3000); // every 3 seconds
 
-  return () => clearInterval(interval);
+    return () => clearInterval(interval);
   }, []);
-  //   useEffect(() => {
-  //   loadOrders();
-  // }, []);
+
+  // const loadOrders = async () => {
+  //   setLoading(true);
+  //   const res = await getAllOrders();
+  //   setOrders(res.data);
+  //   setLoading(false);
+  // };
   const loadOrders = async () => {
     setLoading(true);
-    const res = await getAllOrders();
-    setOrders(res.data);
-    setLoading(false);
+
+    try {
+      const res = await getAllOrders();
+
+      if (!res || !res.data) {
+        setOrders([]);
+        return;
+      }
+
+      setOrders(res.data);
+    } catch (err) {
+      console.error('Failed to load orders', err);
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const changeStatus = async (orderId: string, status: string) => {
