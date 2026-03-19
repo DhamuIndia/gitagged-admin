@@ -172,6 +172,12 @@ export default function ProductsPage() {
     return categories.map(c => c.name).join(', ');
   };
 
+  const getLeafCategories = () => {
+    return categories.filter(cat => {
+      return !categories.some(c => c.parentId === cat._id);
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -303,8 +309,8 @@ export default function ProductsPage() {
                       </div>
 
                       {showCategories && (
-                        <div className="absolute z-10 bg-white border rounded shadow max-h-48 overflow-y-auto w-full mt-1">
-                          {categories.map(c => (
+                        <div className="absolute z-10 bg-white border rounded shadow max-h-30 overflow-y-auto w-full mt-1">
+                          {getLeafCategories().map(c => (
                             <label key={c._id} className="flex gap-2 px-3 py-2 hover:bg-gray-100">
                               <input
                                 type="checkbox"
@@ -340,7 +346,7 @@ export default function ProductsPage() {
                       </div>
 
                       {showRegions && (
-                        <div className="absolute z-10 bg-white border rounded shadow max-h-48 overflow-y-auto w-full mt-1">
+                        <div className="absolute z-10 bg-white border rounded shadow max-h-30 overflow-y-auto w-full mt-1">
                           {regions.map(r => (
                             <label key={r._id} className="flex gap-2 px-3 py-2 hover:bg-gray-100">
                               <input

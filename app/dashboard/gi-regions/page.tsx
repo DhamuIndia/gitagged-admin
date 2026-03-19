@@ -224,7 +224,7 @@ export default function GIRegionsPage() {
                       </div>
 
                       {showCategories && (
-                        <div className="absolute z-10 bg-white border rounded shadow max-h-48 overflow-y-auto w-full mt-1">
+                        <div className="absolute z-10 bg-white border rounded shadow max-h-30 overflow-y-auto w-full mt-1">
                           {categories.map((c) => (
                             <label key={c._id} className="flex gap-2 px-3 py-2 hover:bg-gray-100">
                               <input

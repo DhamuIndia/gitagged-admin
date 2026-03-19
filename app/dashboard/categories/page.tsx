@@ -13,6 +13,7 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showModel, setShowModel] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
 
   useEffect(() => {
     loadCategories();
@@ -26,14 +27,14 @@ export default function CategoriesPage() {
   const [form, setForm] = useState({
     name: '',
     description: '',
-    parentId: '' as string | '',
+    parentId: '' as string,
     image: '' as string | '',
   });
 
   const isFormValid = () => {
     if (!form.name.trim()) return false;
     if (!form.description.trim()) return false;
-    if (form.parentId === null) return false;
+    if (!form.parentId) return false;
     return true;
   };
 
@@ -112,6 +113,18 @@ export default function CategoriesPage() {
     }
 
     return { main, sub, child };
+  };
+
+  const getParentAndSubCategories = () => {
+    return categories.filter(cat => {
+      if (!cat.parentId) return true; // main
+
+      const parent = categories.find(c => c._id === cat.parentId);
+
+      if (parent && !parent.parentId) return true; // sub
+
+      return false; // remove child
+    });
   };
 
   return (
@@ -219,23 +232,46 @@ export default function CategoriesPage() {
                     </div>
 
                     {/* Parent Category */}
-                    <div>
+                    <div className="relative">
                       <label className="font-medium block mb-1">Parent Category</label>
-                      <select
-                        value={form.parentId}
-                        onChange={(e) => setForm({ ...form, parentId: e.target.value })}
-                        className="w-full border rounded-lg px-3 py-2"
+
+                      <div
+                        onClick={() => setShowCategories(!showCategories)}
+                        className="border rounded-lg px-3 py-2 cursor-pointer flex justify-between bg-white"
                       >
-                        <option value="">No Parent (Main Category)</option>
-                        {categories
-                          .filter(c => c._id !== editingId) // prevent self-parent
-                          .map(c => (
-                            <option key={c._id} value={c._id}>
-                              {c.name}
-                            </option>
-                          ))}
-                      </select>
+                        <span className="text-gray-600">
+                          {form.parentId
+                            ? categories.find(c => c._id === form.parentId)?.name
+                            : 'Select Category'}
+                        </span>
+                        <span>▾</span>
+                      </div>
+
+                      {showCategories && (
+                        <div className="absolute z-10 w-full bg-white border rounded shadow max-h-30 overflow-y-auto mt-1">
+
+                          {getParentAndSubCategories()
+                            .filter(c => c._id !== editingId)
+                            .map(c => (
+                              <label
+                                key={c._id}
+                                className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100"
+                              >
+                                <input
+                                  type="radio"
+                                  checked={form.parentId === c._id}
+                                  onChange={() => {
+                                    setForm({ ...form, parentId: c._id });
+                                    setShowCategories(false);
+                                  }}
+                                />
+                                {c.name}
+                              </label>
+                            ))}
+                        </div>
+                      )}
                     </div>
+
                   </div>
 
                   {/* RIGHT – IMAGE */}
