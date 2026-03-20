@@ -60,6 +60,7 @@ export default function SellersPage() {
           <table className="w-full border">
             <thead className="bg-gray-100">
               <tr>
+                <th className="border p-2">S.No</th>
                 <th className="border p-2">Business Name</th>
                 <th className="border p-2">User</th>
                 <th className="border p-2">GST</th>
@@ -69,8 +70,9 @@ export default function SellersPage() {
             </thead>
 
             <tbody>
-              {sellers.map((s) => (
+              {sellers.map((s, index) => (
                 <tr key={s._id}>
+                  <td className='border p-2 text-center'>{index + 1}</td>
                   <td className="border p-2 text-center">
                     {s.businessName}
                   </td>

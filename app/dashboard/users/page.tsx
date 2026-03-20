@@ -45,6 +45,7 @@ export default function UsersPage() {
                         <table className="min-w-[900px] w-full border">
                             <thead>
                                 <tr>
+                                    <th className="border p-2 bg-gray-100">S.No</th>
                                     <th className="border p-2 bg-gray-100">Name</th>
                                     <th className="border p-2 bg-gray-100">Email</th>
                                     <th className="border p-2 bg-gray-100">Phone</th>
@@ -55,11 +56,12 @@ export default function UsersPage() {
                             </thead>
 
                             <tbody>
-                                {users.map(user => {
+                                {users.map((user, index) => {
                                     const status = resolveStatus(user);
 
                                     return (
                                         <tr key={user._id}>
+                                            <td className="border p-2 text-center whitespace-nowrap">{index + 1}</td>
                                             <td className="border p-2 text-center whitespace-nowrap">{user.name}</td>
                                             <td className="border p-2 text-center whitespace-nowrap">{user.email}</td>
                                             <td className="border p-2 text-center whitespace-nowrap">{user.phone}</td>

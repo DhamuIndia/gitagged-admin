@@ -9,11 +9,9 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    // remove the old token and role..
-    // localStorage.removeItem('token');
-    // localStorage.removeItem('role');
     localStorage.clear();
     // prevent browser back navigation
     window.history.pushState(null, '', window.location.href);
@@ -24,20 +22,17 @@ export default function LoginPage() {
   }, []);
 
   if (!mounted) {
-    return null; // ⬅️ prevents hydration mismatch
+    return null;
   }
 
   const handleLogin = async () => {
     try {
       const res = await axios.post(
-        // 'http://localhost:3002/admin-auth/login',
         'http://localhost:3002/auth/login',
         { identifier: email, password },
         { headers: { 'Content-Type': 'application/json' } }
       );
 
-      // localStorage.setItem('token', res.data.accessToken);
-      // localStorage.setItem('role', res.data.role);
       localStorage.setItem('role', res.data.role);
 
       if (res.data.role === 'ADMIN') {
@@ -75,14 +70,23 @@ export default function LoginPage() {
         </div>
 
         {/* PASSWORD */}
-        <div className="mb-2">
+        <div className="mb-2 relative">
           <label className="block text-sm mb-1">Password</label>
+
           <input
-            type="password"
+            type={showPassword ? 'text' : 'password'} // 👈 toggle
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+            className="w-full px-4 py-2 border rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-black"
           />
+
+          {/* 👁 ICON */}
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-9 cursor-pointer text-gray-500"
+          >
+            {showPassword ? '🙈' : '👁️'}
+          </span>
         </div>
 
         <div

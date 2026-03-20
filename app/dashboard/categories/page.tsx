@@ -14,6 +14,7 @@ export default function CategoriesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showModel, setShowModel] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
+  const [selectedMainCategory, setSelectedMainCategory] = useState('');
 
   useEffect(() => {
     loadCategories();
@@ -118,6 +119,14 @@ export default function CategoriesPage() {
     return { main, sub, child };
   };
 
+  const mainCategories = categories.filter(c => !c.parentId);
+  const filteredCategories = selectedMainCategory
+    ? categories.filter(c => {
+      const { main } = resolveLevels(c);
+      return main === selectedMainCategory;
+    })
+    : categories;
+
   const getParentAndSubCategories = () => {
     return categories.filter(cat => {
       if (!cat.parentId) return true; // main
@@ -157,18 +166,39 @@ export default function CategoriesPage() {
             <table className="w-full border">
               <thead>
                 <tr>
-                  <th className="border p-2 bg-gray-100">Main Category</th>
+                  <th className="border p-2 bg-gray-100">S.No</th>
+                  {/* <th className="border p-2 bg-gray-100">Main Category</th> */}
+                  <th className="border p-2 bg-gray-100">
+                    <div className="flex items-center justify-center gap-2">
+                      Main Category
+
+                      <select
+                        value={selectedMainCategory}
+                        onChange={(e) => setSelectedMainCategory(e.target.value)}
+                        className="border rounded text-sm px-1 py-0.5"
+                      >
+                        <option value="">All</option>
+                        {mainCategories.map(c => (
+                          <option key={c._id} value={c.name}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </th>
                   <th className="border p-2 bg-gray-100">Sub Category</th>
                   <th className="border p-2 bg-gray-100">Child Category</th>
                   <th className="border p-2 bg-gray-100">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {categories.map(c => {
+                {/* {categories.map((c, index) => { */}
+                 {filteredCategories.map((c, index) => {
                   const { main, sub, child } = resolveLevels(c);
 
                   return (
                     <tr key={c._id}>
+                      <td className="border p-2 text-center">{index + 1}</td>
                       <td className="border p-2 text-center whitespace-nowrap">{main}</td>
                       <td className="border p-2 text-center whitespace-nowrap">{sub}</td>
                       <td className="border p-2 text-center whitespace-nowrap">{child}</td>

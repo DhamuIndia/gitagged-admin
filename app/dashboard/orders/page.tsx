@@ -87,6 +87,7 @@ export default function OrdersPage() {
           <table className="w-full border">
             <thead>
               <tr>
+                <th className="border p-2 bg-gray-100 whitespace-nowrap">S.No</th>
                 <th className="border p-2 bg-gray-100 whitespace-nowrap">Order ID</th>
                 {/* role based view.. */}
                 {role == 'ADMIN' && (
@@ -106,8 +107,9 @@ export default function OrdersPage() {
             </thead>
 
             <tbody>
-              {filteredOrders.map(order => (
+              {filteredOrders.map((order, index) => (
                 <tr key={order._id}>
+                  <td className="border p-2 text-center whitespace-nowrap">{index + 1}</td>
                   <td className="border p-2 text-center whitespace-nowrap">
                     {order._id.slice(-6)}
                   </td>

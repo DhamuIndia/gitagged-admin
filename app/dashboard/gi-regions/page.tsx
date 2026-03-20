@@ -130,14 +130,16 @@ export default function GIRegionsPage() {
           <table className="w-full border">
             <thead className="bg-gray-100">
               <tr>
+                <th className="border p-2">S.No</th>
                 <th className="border p-2">Name</th>
                 <th className="border p-2">State</th>
                 <th className="border p-2">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {regions.map((r) => (
+              {regions.map((r, index) => (
                 <tr key={r._id}>
+                  <td className="border p-2 text-center">{index + 1}</td>
                   <td className="border p-2 text-center">{r.name}</td>
                   <td className="border p-2 text-center">{r.state}</td>
                   <td className="border p-2 text-center">

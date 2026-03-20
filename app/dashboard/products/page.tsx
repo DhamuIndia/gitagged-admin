@@ -442,6 +442,7 @@ export default function ProductsPage() {
             <table className="w-full border">
               <thead className="bg-gray-100">
                 <tr>
+                  <th className="border p-2">S.No</th>
                   <th className="border p-2">Title</th>
                   <th className="border p-2">Price</th>
                   <th className="border p-2">Stock</th>
@@ -450,8 +451,9 @@ export default function ProductsPage() {
                 </tr>
               </thead>
               <tbody>
-                {products.map(p => (
+                {products.map((p,index) => (
                   <tr key={p._id} className="hover:bg-gray-50">
+                    <td className="border p-2 text-center whitespace-nowrap">{index + 1}</td>
                     <td className="border p-2 text-center whitespace-nowrap">{p.title}</td>
                     <td className="border p-2 text-center whitespace-nowrap">₹{p.price}</td>
                     <td className="border p-2 text-center whitespace-nowrap">{p.stock}</td>
