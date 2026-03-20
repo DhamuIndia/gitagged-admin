@@ -15,8 +15,13 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
+  const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
+
+    const stroredRole = localStorage.getItem('role');
+    setRole(stroredRole);
+
     loadOrders();
     const interval = setInterval(() => {
       loadOrders();
@@ -25,12 +30,6 @@ export default function OrdersPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // const loadOrders = async () => {
-  //   setLoading(true);
-  //   const res = await getAllOrders();
-  //   setOrders(res.data);
-  //   setLoading(false);
-  // };
   const loadOrders = async () => {
     setLoading(true);
 
@@ -89,9 +88,15 @@ export default function OrdersPage() {
             <thead>
               <tr>
                 <th className="border p-2 bg-gray-100 whitespace-nowrap">Order ID</th>
-                <th className="border p-2 bg-gray-100 whitespace-nowrap">Name</th>
-                <th className="border p-2 bg-gray-100 whitespace-nowrap">Phone</th>
-                <th className="border p-2 bg-gray-100 whitespace-nowrap">Address</th>
+                {/* role based view.. */}
+                {role == 'ADMIN' && (
+                  <>
+                    <th className="border p-2 bg-gray-100 whitespace-nowrap">Name</th>
+                    <th className="border p-2 bg-gray-100 whitespace-nowrap">Phone</th>
+                    <th className="border p-2 bg-gray-100 whitespace-nowrap">Address</th>
+                  </>
+                )
+                }
                 <th className='border p-2 bg-gray-100 whitespace-nowrap'>Product and Quantity</th>
                 <th className="border p-2 bg-gray-100 whitespace-nowrap">Amount</th>
                 <th className="border p-2 bg-gray-100 whitespace-nowrap">Status</th>
@@ -107,13 +112,18 @@ export default function OrdersPage() {
                     {order._id.slice(-6)}
                   </td>
 
-                  <td className="border p-2 text-center whitespace-nowrap">
-                    {order.userId?.name || '—'}
-                  </td>
+                  {role == 'ADMIN' && (
+                    <>
+                      <td className="border p-2 text-center whitespace-nowrap">
+                        {order.userId?.name || '—'}
+                      </td>
 
-                  <td className='border p-2 text-center whitespace-nowrap'>{order.userId?.phone || '—'}</td>
+                      <td className='border p-2 text-center whitespace-nowrap'>{order.userId?.phone || '—'}</td>
 
-                  <td className='border p-2 text-center whitespace-nowrap'>{order.userId?.address || '—'}</td>
+                      <td className='border p-2 text-center whitespace-nowrap'>{order.userId?.address || '—'}</td>
+                    </>
+                  )
+                  }
 
                   <td className='border p-2 text-center whitespace-nowrap'>
                     {order.items?.map((item: any) => (

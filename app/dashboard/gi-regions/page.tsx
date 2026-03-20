@@ -25,8 +25,6 @@ export default function GIRegionsPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [showCategories, setShowCategories] = useState(false);
   const [imageInputKey, setImageInputKey] = useState(0);
-
-  // ✅ MISSING STATE (IMPORTANT)
   const [showModle, setShowModle] = useState(false);
 
   useEffect(() => {
@@ -48,11 +46,15 @@ export default function GIRegionsPage() {
     if (!form.description.trim()) return false;
     if (form.categories.length === 0) return false;
     if (form.certificateNumber.trim() === '') return false;
+    if (!form.image && !editingId) return false;
     return true;
   };
 
   const save = async () => {
-    if (!isFormValid()) return;
+    if (!isFormValid()) {
+      alert('Enter all the feilds');
+      return;
+    }
 
     if (editingId) {
       await updateRegion(editingId, form);

@@ -34,12 +34,15 @@ export default function CategoriesPage() {
   const isFormValid = () => {
     if (!form.name.trim()) return false;
     if (!form.description.trim()) return false;
-    if (!form.parentId) return false;
+    if (!form.image && !editingId) return false;
     return true;
   };
 
   const save = async () => {
-    if (!isFormValid()) return;
+    if (!isFormValid()) {
+      alert('Enter all the feilds!!');
+      return;
+    }
     const payload = {
       name: form.name,
       description: form.description,

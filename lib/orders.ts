@@ -4,14 +4,6 @@ const API = axios.create({
   baseURL: 'http://localhost:3003',
 });
 
-// attach admin token
-// API.interceptors.request.use((config) => {
-//   const token = localStorage.getItem('adminToken');
-//   if (token) {
-//     config.headers.Authorization = `Bearer ${token}`;
-//   }
-//   return config;
-// });
 API.interceptors.request.use((config) => {
 
   const role = localStorage.getItem('role');
@@ -33,8 +25,6 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-// export const getAllOrders = () =>
-//   API.get('/orders/admin/all');
 export const getAllOrders = () => {
   const role = localStorage.getItem('role');
 
