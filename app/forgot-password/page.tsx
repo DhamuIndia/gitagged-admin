@@ -22,8 +22,10 @@ export default function ForgotPasswordPage() {
   const [step, setStep] = useState(1);
   const [confirmPassword, setConfirmPassword] = useState('');
   const recaptchaRef = useRef<RecaptchaVerifier | null>(null);
+  const [showPasswordNP, setShowPasswordNP]=useState(false);
+  const [showPasswordCNP, setShowPasswordCNP]=useState(false);
 
-  // 🔹 Initialize reCAPTCHA once
+  // 🔹 Initialize reCAPTCHA 
   useEffect(() => {
 
     if (!recaptchaRef.current) {
@@ -56,7 +58,6 @@ export default function ForgotPasswordPage() {
       const confirmationResult = await signInWithPhoneNumber(
         auth,
         formattedPhone,
-        // recaptchaVerifier
         recaptchaRef.current!
       );
 
@@ -129,13 +130,15 @@ export default function ForgotPasswordPage() {
 
         {step === 1 && (
           <>
-            <input
-              type="text"
-              placeholder="Enter Phone Number"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full mb-4 border p-2 rounded"
-            />
+            <div>
+              <label className="block text-1rem mb-1">Enter PhoneNumber</label>
+              <input
+                type="text"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full mb-4 border p-2 rounded"
+              />
+            </div>
 
             <div id="recaptcha-container"></div>
 
@@ -150,13 +153,15 @@ export default function ForgotPasswordPage() {
 
         {step === 2 && (
           <>
-            <input
-              type="text"
-              placeholder="Enter OTP"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              className="w-full mb-4 border p-2 rounded"
-            />
+            <div>
+              <label className="block text-1rem mb-1">Enter Otp</label>
+              <input
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                className="w-full mb-4 border p-2 rounded"
+              />
+            </div>
 
             <button onClick={verifyOtp} className="w-full bg-black text-white p-2 rounded">
               Verify OTP
@@ -166,21 +171,37 @@ export default function ForgotPasswordPage() {
 
         {step === 3 && (
           <>
-            <input
-              type="password"
-              placeholder="Enter New Password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full mb-4 border p-2 rounded"
-            />
+            <div className='mb-2 relative'>
+              <label className="block text-1rem mb-1">New Password</label>
+              <input
+                type={showPasswordNP ? 'text' : 'password'}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full mb-4 border p-2 rounded"
+              />
+              <span
+                onClick={() => setShowPasswordNP(!showPasswordNP)}
+                className="absolute right-3 top-9 cursor-pointer text-gray-500"
+              >
+                {showPasswordNP ? '🙈' : '👁️'}
+              </span>
+            </div>
 
-            <input
-              type="password"
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full mb-4 border p-2 rounded"
-            />
+            <div className='mb-2 relative'>
+              <label className='block text-1rem mb-1'>Re-Enter New Password</label>
+              <input
+                type={showPasswordCNP ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full mb-4 border p-2 rounded"
+              />
+              <span
+                onClick={() => setShowPasswordCNP(!showPasswordCNP)}
+                className="absolute right-3 top-9 cursor-pointer text-gray-500"
+              >
+                {showPasswordCNP ? '🙈' : '👁️'}
+              </span>
+            </div>
 
             <button onClick={resetPassword} className="w-full bg-black text-white p-2 rounded">
               Reset Password

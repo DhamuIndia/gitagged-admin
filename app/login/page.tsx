@@ -79,8 +79,6 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-4 py-2 border rounded-md pr-10 focus:outline-none focus:ring-2 focus:ring-black"
           />
-
-          {/* 👁 ICON */}
           <span
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-9 cursor-pointer text-gray-500"
