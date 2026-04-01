@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import axios from 'axios';
 
 export default function LoginPage() {
@@ -10,6 +11,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect');
 
   useEffect(() => {
     localStorage.clear();
@@ -42,7 +45,13 @@ export default function LoginPage() {
       if (res.data.role === 'SELLER') {
         localStorage.setItem('sellerToken', res.data.accessToken);
       }
-      router.push('/dashboard');
+
+      if (redirect && redirect.startsWith('/dashboard')) {
+        router.push(redirect);
+      } else {
+        router.push('/dashboard');
+      }
+      // router.push('/dashboard');
     } catch (err: any) {
       alert(err.response?.data?.message || 'Login failed');
     }

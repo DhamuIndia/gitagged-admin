@@ -13,8 +13,6 @@ export default function ProductsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showCategories, setShowCategories] = useState(false);
   const [showRegions, setShowRegions] = useState(false);
-
-  const [showImageModal, setShowImageModal] = useState(false);
   const [role, setRole] = useState<string | null>(null);
   const [showModel, setShowModel] = useState(false);
 
@@ -36,11 +34,6 @@ export default function ProductsPage() {
     const storedRole = localStorage.getItem('role');
     setRole(storedRole);
     load(storedRole);
-    // const interval = setInterval(() => {
-    //   load();
-    // }, 3000); // every 3 seconds
-
-    // return () => clearInterval(interval);
   }, []);
 
   const load = async (roleParam?: string | null) => {
@@ -178,6 +171,33 @@ export default function ProductsPage() {
     });
   };
 
+  const toggleStatus = async (product: any) => {
+    const newStatus = product.status === 'active' ? 'inactive' : 'active';
+
+    // ✅ 1. Instant UI update
+    setProducts(prev =>
+      prev.map(p =>
+        p._id === product._id ? { ...p, status: newStatus } : p
+      )
+    );
+
+    try {
+      // ✅ 2. Backend update
+      await updateProduct(product._id, {
+        status: newStatus,
+      });
+    } catch (err) {
+      // ❌ rollback if error
+      setProducts(prev =>
+        prev.map(p =>
+          p._id === product._id ? { ...p, status: product.status } : p
+        )
+      );
+
+      alert('Failed to update status');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -187,15 +207,19 @@ export default function ProductsPage() {
           <div>
             <h1 className="text-2xl font-semibold">Products</h1>
           </div>
-          <button
-            onClick={() => {
-              reset();
-              setShowModel(true);
-            }}
-            className="bg-indigo-600 text-white px-6 py-2 rounded-lg"
-          >
-            + Add Product
-          </button>
+          {
+            role === 'SELLER' && (
+              <button
+                onClick={() => {
+                  reset();
+                  setShowModel(true);
+                }}
+                className="bg-indigo-600 text-white px-6 py-2 rounded-lg"
+              >
+                + Add Product
+              </button>
+            )
+          }
         </div>
 
         {/* FORM */}
@@ -447,11 +471,25 @@ export default function ProductsPage() {
                   <th className="border p-2">Price</th>
                   <th className="border p-2">Stock</th>
                   <th className="border p-2">Category</th>
-                  <th className="border p-2">Actions</th>
+                  {
+                    role === 'ADMIN' &&(
+                      <th className="border p-2">IsApproved</th>
+                    )
+                  }
+                  {
+                    role === 'ADMIN' && (
+                      <th className="border p-2">Status</th>
+                    )
+                  }
+                  {
+                    role === 'SELLER' && (
+                      <th className="border p-2">Actions</th>
+                    )
+                  }
                 </tr>
               </thead>
               <tbody>
-                {products.map((p,index) => (
+                {products.map((p, index) => (
                   <tr key={p._id} className="hover:bg-gray-50">
                     <td className="border p-2 text-center whitespace-nowrap">{index + 1}</td>
                     <td className="border p-2 text-center whitespace-nowrap">{p.title}</td>
@@ -460,10 +498,37 @@ export default function ProductsPage() {
                     <td className="border p-2 text-center whitespace-nowrap">
                       {getCategoryNames(p.categories)}
                     </td>
-                    <td className="border p-2 text-center whitespace-nowrap">
-                      <button onClick={() => edit(p)} className="text-blue-600 mr-3">Edit</button>
-                      <button onClick={() => remove(p._id)} className="text-red-600">Delete</button>
-                    </td>
+                    {
+                      role==='ADMIN' &&(
+                        <td className="border p-2 text-center whitespace-nowrap">{p.isApproved ? 'Approved' : 'Pending'}</td>
+                      )
+                    }
+                    {
+                      role === 'ADMIN' && (
+                        <td className="border p-2 text-center whitespace-nowrap">
+                          <div className="flex items-center justify-center">
+                            <div
+                              onClick={() => toggleStatus(p)}
+                              className={`w-14 h-7 flex items-center rounded-full p-1 cursor-pointer transition ${p.status === 'active' ? 'bg-green-500' : 'bg-red-500'
+                                }`}
+                            >
+                              <div
+                                className={`bg-white w-5 h-5 rounded-full shadow-md transform transition ${p.status === 'active' ? 'translate-x-7' : 'translate-x-0'
+                                  }`}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                      )
+                    }
+                    {
+                      role === 'SELLER' && (
+                        <td className="border p-2 text-center whitespace-nowrap">
+                          <button onClick={() => edit(p)} className="text-blue-600 mr-3">Edit</button>
+                          <button onClick={() => remove(p._id)} className="text-red-600">Delete</button>
+                        </td>
+                      )
+                    }
                   </tr>
                 ))}
               </tbody>

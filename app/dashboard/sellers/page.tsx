@@ -43,7 +43,7 @@ export default function SellersPage() {
     return 'bg-yellow-100 text-yellow-700';
   };
 
-  const changeStatus = async(id: string, status: string) => {
+  const changeStatus = async (id: string, status: string) => {
     await updateSellerStatus(id, status);
     load();
   };
@@ -96,7 +96,7 @@ export default function SellersPage() {
                   </td>
 
                   <td className="border p-2 text-center whitespace-nowrap">
-                     <button
+                    <button
                       onClick={() => setSelectedSeller(s)}
                       className="text-blue-600 pr-4"
                     >
@@ -108,7 +108,11 @@ export default function SellersPage() {
                       className="border rounded px-2 py-1"
                     >
                       <option value="APPROVED">APPROVED</option>
-                      <option value="PENDING">PENDING</option>
+                      {
+                        s.status === 'PENDING' && (
+                          <option value="PENDING">PENDING</option>
+                        )
+                      }
                       <option value="REJECTED">REJECTED</option>
                     </select>
                   </td>
@@ -136,14 +140,15 @@ export default function SellersPage() {
 
               <div className="space-y-3 text-sm">
 
-                <p><strong>Business:</strong> {selectedSeller.businessName}</p>
-                <p><strong>Business Type:</strong> {selectedSeller.businessType}</p>
-                <p><strong>GST:</strong> {selectedSeller.gstNumber}</p>
-                <p><strong>PAN:</strong> {selectedSeller.panNumber}</p>
-                <p><strong>Account Holder:</strong> {selectedSeller.accountHolderName}</p>
-                <p><strong>Account No:</strong> {selectedSeller.bankAccountNumber}</p>
-                <p><strong>IFSC:</strong> {selectedSeller.ifscCode}</p>
-                <p><strong>Mobile:</strong> {selectedSeller.mobileNumber}</p>
+                <p><strong>Business: </strong> {selectedSeller.businessName}</p>
+                <p><strong>Business Type: </strong> {selectedSeller.businessType}</p>
+                <p><strong>GST: </strong> {selectedSeller.gstNumber}</p>
+                <p><strong>PAN: </strong> {selectedSeller.panNumber}</p>
+                <p><strong>Account Holder: </strong> {selectedSeller.accountHolderName}</p>
+                <p><strong>Account No: </strong> {selectedSeller.bankAccountNumber}</p>
+                <p><strong>IFSC: </strong> {selectedSeller.ifscCode}</p>
+                <p><strong>Mobile: </strong> {selectedSeller.mobileNumber}</p>
+                <p><strong>Product Description: </strong>{selectedSeller.productDescription}</p>
 
                 {selectedSeller.digitalSignatureUrl && (
                   <div className="pt-2">

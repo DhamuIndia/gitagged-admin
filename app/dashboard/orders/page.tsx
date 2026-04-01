@@ -64,7 +64,6 @@ export default function OrdersPage() {
       order.userId?.phone?.toLowerCase().includes(searchLower) ||
       order.userId?.address?.toLowerCase().includes(searchLower)
     );
-
   })
 
   return (
@@ -160,7 +159,6 @@ export default function OrdersPage() {
                       className="border rounded px-2 py-1"
                     >
                       <option value="PLACED">PLACED</option>
-                      <option value="PAID">PAID</option>
                       <option value="SHIPPED">SHIPPED</option>
                       <option value="DELIVERED">DELIVERED</option>
                       <option value="CANCELLED">CANCELLED</option>

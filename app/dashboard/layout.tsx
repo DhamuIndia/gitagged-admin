@@ -15,14 +15,10 @@ export default function DashboardLayout({
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
-    // const token = localStorage.getItem('token');
     const adminToken = localStorage.getItem('adminToken');
     const sellerToken = localStorage.getItem('sellerToken');
     const role = localStorage.getItem('role');
-    // if (!token) {
-    //   router.push('/login');
-    //   return;
-    // }
+
     if (!adminToken && !sellerToken) {
       router.push('/login');
       return;
@@ -109,6 +105,17 @@ export default function DashboardLayout({
                 className={linkClass('/dashboard/sellers')}
               >
                 👨🏽‍💼 Sellers
+              </Link>
+            )
+          }
+
+          {
+            role == 'ADMIN' && (
+              <Link
+                href="/dashboard/product-approval"
+                className={linkClass('/dashboard/product-approval')}
+              >
+                ✅Product Approval
               </Link>
             )
           }

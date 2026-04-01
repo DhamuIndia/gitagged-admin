@@ -16,14 +16,9 @@ API.interceptors.request.use((config) => {
 export const getAllSellers = () =>
   API.get('/sellers');
 
-export const updateSellerStatus = (
-  sellerId: string,
-  status: string
-) =>
-  API.patch(`/sellers/${sellerId}/status`, { status });
+export const updateSellerStatus = (id: string, status: string) => {
+  return API.patch(`/sellers/${id}/status`, {
+    status,
 
-// export const approveSeller = (id: string) =>
-//   API.patch(`/sellers/${id}/approve`);
-
-// export const rejectSeller = (id: string) =>
-//   API.patch(`/sellers/${id}/reject`);
+  });
+};
