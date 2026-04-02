@@ -115,7 +115,7 @@ export default function DashboardLayout({
                 href="/dashboard/product-approval"
                 className={linkClass('/dashboard/product-approval')}
               >
-                ✅Product Approval
+                ✅ Product Approval
               </Link>
             )
           }

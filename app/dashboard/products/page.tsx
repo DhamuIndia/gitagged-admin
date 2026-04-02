@@ -172,25 +172,36 @@ export default function ProductsPage() {
   };
 
   const toggleStatus = async (product: any) => {
+
+    if (product.approveStatus === 'PENDING') {
+      alert('This product is not approved yet!!');
+      return;
+    }
     const newStatus = product.status === 'active' ? 'inactive' : 'active';
 
-    // ✅ 1. Instant UI update
+    // 🔥 NEW LOGIC
+    const newApproveStatus =
+      newStatus === 'active' ? 'APPROVED' : 'REJECTED';
+
+    // ✅ Instant UI update
     setProducts(prev =>
       prev.map(p =>
-        p._id === product._id ? { ...p, status: newStatus } : p
+        p._id === product._id
+          ? { ...p, status: newStatus, approveStatus: newApproveStatus }
+          : p
       )
     );
 
     try {
-      // ✅ 2. Backend update
       await updateProduct(product._id, {
         status: newStatus,
+        approveStatus: newApproveStatus, 
       });
     } catch (err) {
-      // ❌ rollback if error
+      // rollback
       setProducts(prev =>
         prev.map(p =>
-          p._id === product._id ? { ...p, status: product.status } : p
+          p._id === product._id ? product : p
         )
       );
 
@@ -471,11 +482,7 @@ export default function ProductsPage() {
                   <th className="border p-2">Price</th>
                   <th className="border p-2">Stock</th>
                   <th className="border p-2">Category</th>
-                  {
-                    role === 'ADMIN' &&(
-                      <th className="border p-2">IsApproved</th>
-                    )
-                  }
+                  <th className="border p-2">Approve Status</th>
                   {
                     role === 'ADMIN' && (
                       <th className="border p-2">Status</th>
@@ -498,11 +505,16 @@ export default function ProductsPage() {
                     <td className="border p-2 text-center whitespace-nowrap">
                       {getCategoryNames(p.categories)}
                     </td>
-                    {
-                      role==='ADMIN' &&(
-                        <td className="border p-2 text-center whitespace-nowrap">{p.isApproved ? 'Approved' : 'Pending'}</td>
-                      )
-                    }
+                    <td className="border p-2 text-center whitespace-nowrap">
+                      <span
+                        className={`px-2 py-1 rounded-full text-white ${p.approveStatus === 'APPROVED'
+                          ? 'bg-green-600'
+                          : p.approveStatus === 'PENDING'
+                            ? 'bg-yellow-500'
+                            : 'bg-red-600'
+                          }`}
+                      >{p.approveStatus}</span>
+                    </td>
                     {
                       role === 'ADMIN' && (
                         <td className="border p-2 text-center whitespace-nowrap">

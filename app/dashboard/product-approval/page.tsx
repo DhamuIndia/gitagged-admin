@@ -16,14 +16,28 @@ export default function ProductApproval() {
     fetchProducts();
   }, []);
 
-  const approveProduct = async (id: string) => {
-    await axios.patch(`http://localhost:3002/products/${id}/approve`);
+  const approveProduct = async (product: any) => {
+
+    if (product.isUpdatePending) {
+      // UPDATE APPROVAL
+      await axios.patch(`http://localhost:3002/products/${product._id}/approve-update`);
+    } else {
+      // NEW PRODUCT APPROVAL
+      await axios.patch(`http://localhost:3002/products/${product._id}/approve`);
+    }
+
     setSelectedProduct(null);
     fetchProducts();
   };
 
-  const rejectProduct = async (id: string) => {
-    await axios.patch(`http://localhost:3002/products/${id}/reject`);
+  const rejectProduct = async (product: any) => {
+
+    if (product.isUpdatePending) {
+      await axios.patch(`http://localhost:3002/products/${product._id}/reject-update`);
+    } else {
+      await axios.patch(`http://localhost:3002/products/${product._id}/reject`);
+    }
+
     setSelectedProduct(null);
     fetchProducts();
   };
@@ -56,9 +70,13 @@ export default function ProductApproval() {
                   {p.sellerId?.sellerName || '—'}
                 </td>
                 <td className="border p-2 text-center">
-                  <span className="bg-yellow-500 text-white px-2 py-1 rounded">
-                    Pending
-                  </span>
+                  <span className="bg-yellow-500 text-white px-2 py-1 rounded">{p.approveStatus}</span>
+
+                  {p.isUpdatePending && (
+                    <div className="text-xs text-orange-600 mt-1">
+                      Update Pending 🔄
+                    </div>
+                  )}
                 </td>
                 <td className="border p-2 text-center">
                   <button
@@ -85,35 +103,69 @@ export default function ProductApproval() {
       {/* 🔥 PRODUCT DETAIL MODAL */}
       {selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center">
-          <div className="bg-white w-[500px] rounded-lg p-6">
+          <div className="bg-white w-[700px] rounded-lg p-6">
 
-            <h2 className="text-xl font-bold mb-4">Product Details</h2>
+            <h2 className="text-xl font-bold mb-4">Product Review For Updation!!</h2>
 
+            {/* IMAGE */}
             <img
               src={selectedProduct.images?.[0]}
-              className="w-full h-40 object-cover mb-3"
+              className="w-full h-48 object-cover mb-4 rounded"
             />
 
-            <p><strong>Title:</strong> {selectedProduct.title}</p>
-            <p><strong>Price:</strong> ₹{selectedProduct.price}</p>
-            <p><strong>Stock:</strong> {selectedProduct.stock}</p>
-            <p><strong>Seller:</strong> {selectedProduct.sellerId?.sellerName}</p>
+            {/* 🔥 COMPARISON */}
+            <div className="grid grid-cols-2 gap-6">
 
-            <p className="mt-2">
-              <strong>Description:</strong> {selectedProduct.description}
-            </p>
+              {/* OLD DATA */}
+              <div>
+                <h3 className="font-semibold mb-2 text-gray-600">Current <p className='text-red-500 inline'>(Live)</p></h3>
+
+                <p><strong>Title:</strong> {selectedProduct.title}</p>
+                <p><strong>Price:</strong> ₹{selectedProduct.price}</p>
+                <p><strong>Stock:</strong> {selectedProduct.stock}</p>
+                <p><strong>Description:</strong> {selectedProduct.description}</p>
+              </div>
+
+              {/* NEW DATA */}
+              {selectedProduct.pendingUpdates && (
+                <div>
+                  <h3 className="font-semibold mb-2 text-blue-600">New Changes</h3>
+
+                  <p>
+                    <strong>Title:</strong>{' '}
+                    {selectedProduct.pendingUpdates.title || '-'}
+                  </p>
+
+                  <p>
+                    <strong>Price:</strong>{' '}
+                    ₹{selectedProduct.pendingUpdates.price || '-'}
+                  </p>
+
+                  <p>
+                    <strong>Stock:</strong>{' '}
+                    {selectedProduct.pendingUpdates.stock || '-'}
+                  </p>
+
+                  <p>
+                    <strong>Description:</strong>{' '}
+                    {selectedProduct.pendingUpdates.description || '-'}
+                  </p>
+                </div>
+              )}
+
+            </div>
 
             {/* ACTION BUTTONS */}
-            <div className="flex justify-end gap-3 mt-5">
+            <div className="flex justify-center gap-3 mt-6">
               <button
-                onClick={() => approveProduct(selectedProduct._id)}
+                onClick={() => approveProduct(selectedProduct)}
                 className="bg-green-600 text-white px-4 py-2 rounded"
               >
                 Approve
               </button>
 
               <button
-                onClick={() => rejectProduct(selectedProduct._id)}
+                onClick={() => rejectProduct(selectedProduct)}
                 className="bg-red-600 text-white px-4 py-2 rounded"
               >
                 Reject
