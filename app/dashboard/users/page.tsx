@@ -25,8 +25,10 @@ export default function UsersPage() {
     };
 
     const resolveStatus = (user: any) => {
-        const isBlocked = user.isBlocked === true || user.isBlocked === 'true';
-        const isActive = user.isActive === true || user.isActive === 'true';
+        const isBlocked = Boolean(user.isBlocked);
+        const isActive = Boolean(user.isActive);
+        // const isBlocked = user.isBlocked === true || user.isBlocked === 'true';
+        // const isActive = user.isActive === true || user.isActive === 'true';
 
         if (isBlocked) return 'Blocked';
         if (!isActive) return 'Inactive';
@@ -62,10 +64,35 @@ export default function UsersPage() {
                                     return (
                                         <tr key={user._id}>
                                             <td className="border p-2 text-center whitespace-nowrap">{index + 1}</td>
-                                            <td className="border p-2 text-center whitespace-nowrap">{user.name}</td>
-                                            <td className="border p-2 text-center whitespace-nowrap">{user.email}</td>
-                                            <td className="border p-2 text-center whitespace-nowrap">{user.phone}</td>
-                                            <td className="border p-2 text-center whitespace-nowrap">{user.address}</td>
+                                            <td className="border p-2 text-sm whitespace-nowrap">{user.name}</td>
+                                            <td className="border p-2 text-sm whitespace-nowrap">{user.email}</td>
+                                            <td className="border p-2 text-sm whitespace-nowrap">{user.phone}</td>
+                                            <td className="border p-2 text-sm">
+                                                {user.address?.length > 0 ? (
+                                                    user.address.map((addr: any, i: number) => (
+                                                        <div key={i} className="mb-2 ">
+                                                            <p className="font-medium">{addr.addressLine}</p>
+
+                                                            <p className="text-sm text-gray-600">
+                                                                {addr.city}, {addr.state}
+                                                            </p>
+
+                                                            <p className="text-xs text-gray-500">
+                                                                {addr.pincode}
+                                                            </p>
+
+                                                            {addr.isDefault && (
+                                                                <span className="text-green-600 text-xs font-semibold">
+                                                                    Default
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <span className="text-gray-400">No address</span>
+                                                )}
+                                            </td>
+                                            {/* <td className="border p-2 text-center whitespace-nowrap">{user.address}</td> */}
 
                                             <td className="border p-2 text-center">
                                                 <span className={`px-2 py-1 rounded-full text-white ${status === 'Active' ? 'bg-green-600' :

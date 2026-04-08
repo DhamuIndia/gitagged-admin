@@ -23,11 +23,11 @@ export default function OrdersPage() {
     setRole(stroredRole);
 
     loadOrders();
-    const interval = setInterval(() => {
-      loadOrders();
-    }, 3000); // every 3 seconds
+    // const interval = setInterval(() => {
+    //   loadOrders();
+    // }, 3000); // every 3 seconds
 
-    return () => clearInterval(interval);
+    // return () => clearInterval(interval);
   }, []);
 
   const loadOrders = async () => {
@@ -62,7 +62,11 @@ export default function OrdersPage() {
       order._id?.toLowerCase().includes(searchLower) ||
       order.userId?.name?.toLowerCase().includes(searchLower) ||
       order.userId?.phone?.toLowerCase().includes(searchLower) ||
-      order.userId?.address?.toLowerCase().includes(searchLower)
+      order.receiverAddress?.addressLine?.toLowerCase().includes(searchLower) ||
+      order.receiverAddress?.city?.toLowerCase().includes(searchLower) ||
+      order.receiverAddress?.state?.toLowerCase().includes(searchLower) ||
+      order.receiverAddress?.pincode?.toLowerCase().includes(searchLower)
+      // order.userId?.address?.toLowerCase().includes(searchLower)
     );
   })
 
@@ -76,7 +80,7 @@ export default function OrdersPage() {
           <input
             type="text"
             placeholder="🔍Search..."
-            value={search}
+            value={search} 
             onChange={(e) => setSearch(e.target.value)}
             className="border rounded-lg px-4 py-2 w-80 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
@@ -121,7 +125,16 @@ export default function OrdersPage() {
 
                       <td className='border p-2 text-center whitespace-nowrap'>{order.userId?.phone || '—'}</td>
 
-                      <td className='border p-2 text-center whitespace-nowrap'>{order.userId?.address || '—'}</td>
+                      <td className="border p-2 text-center whitespace-nowrap">
+                        <p>{order.receiverAddress?.addressLine}</p>
+                        <p className="text-gray-500">
+                          {order.receiverAddress?.city}, {order.receiverAddress?.state}
+                        </p>
+                        <p className="text-gray-500">
+                          {order.receiverAddress?.pincode}
+                        </p>
+                      </td>
+                      {/* <td className='border p-2 text-center whitespace-nowrap'>{order.userId?.address || '—'}</td> */}
                     </>
                   )
                   }
