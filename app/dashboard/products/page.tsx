@@ -15,6 +15,12 @@ export default function ProductsPage() {
   const [showRegions, setShowRegions] = useState(false);
   const [role, setRole] = useState<string | null>(null);
   const [showModel, setShowModel] = useState(false);
+  const [hasVariants, setHasVariants] = useState(false);
+  const [variantOptions, setVariantOptions] = useState([
+    { name: '', options: [''] }
+  ]);
+
+  const [variants, setVariants] = useState<any[]>([]);
 
   const [form, setForm] = useState({
     title: '',
@@ -59,8 +65,19 @@ export default function ProductsPage() {
 
   const isFormValid = () => {
     if (!form.title.trim()) return false;
-    if (!form.price || Number(form.price) <= 0) return false;
-    if (!form.stock || Number(form.stock) < 0) return false;
+    if (!hasVariants) {
+      if (!form.price || Number(form.price) <= 0) return false;
+      if (!form.stock || Number(form.stock) < 0) return false;
+    }
+
+    if (hasVariants) {
+      if (variants.length === 0) return false;
+
+      for (const v of variants) {
+        if (!v.price || v.price <= 0) return false;
+        if (v.stock < 0) return false;
+      }
+    }
     if (form.categories.length === 0) return false;
     if (form.giRegions.length === 0) return false;
     if (form.description.trim() === '') return false;
@@ -81,21 +98,40 @@ export default function ProductsPage() {
     }
 
     const payload = {
-      ...form,
+      title: form.title,
       slug: form.title.toLowerCase().replace(/\s+/g, '-'),
-      price: Number(form.price),
-      stock: Number(form.stock),
       description: form.description,
       discountPercentage: Number(form.discountPercentage),
       images: form.images,
+      categories: form.categories,
+      giRegions: form.giRegions,
+      status: form.status,
+
       attributes: attributes.reduce((acc, item) => {
         if (item.key && item.value) acc[item.key] = item.value;
         return acc;
       }, {} as Record<string, string>),
+
+      variantOptions: hasVariants ? variantOptions : [],
+
+      variants: hasVariants
+        ? variants.map(v => ({
+          values: v.values,
+          price: Number(v.price),
+          stock: Number(v.stock),
+        }))
+        : [
+          {
+            values: ['default'],
+            price: Number(form.price),
+            stock: Number(form.stock),
+          }
+        ],
     };
 
     editingId ? await updateProduct(editingId, payload) : await createProduct(payload);
     reset();
+    setShowModel(false);
     load();
   };
 
@@ -113,16 +149,22 @@ export default function ProductsPage() {
       status: 'active',
     });
     setAttributes([{ key: '', value: '' }]);
+    setHasVariants(false);
+    setVariantOptions([{ name: '', options: [''] }]);
+    setVariants([]);
   };
 
   const edit = (p: any) => {
     setEditingId(p._id);
     setForm({
       title: p.title,
-      price: String(p.price ?? ''),
-      stock: String(p.stock ?? ''),
+      price: String(p.variants?.[0]?.price ?? ''),
+      stock: String(p.variants?.[0]?.stock ?? ''),
       description: p.description,
-      discountPercentage: String(p.discountPercentage ?? ''),
+      // discountPercentage: String(p.discountPercentage ?? ''),
+      discountPercentage: p.discountPercentage
+        ? String(p.discountPercentage)
+        : '',
       images: p.images || [],
       categories: p.categories || [],
       giRegions: p.giRegions || [],
@@ -162,7 +204,7 @@ export default function ProductsPage() {
 
   const getCategoryNames = (categories: any[]) => {
     if (!Array.isArray(categories)) return '';
-    return categories.map(c => c.name).join(', ');
+    return categories.map(c => c.name).join(', ')
   };
 
   const getLeafCategories = () => {
@@ -179,11 +221,9 @@ export default function ProductsPage() {
     }
     const newStatus = product.status === 'active' ? 'inactive' : 'active';
 
-    // 🔥 NEW LOGIC
     const newApproveStatus =
       newStatus === 'active' ? 'APPROVED' : 'REJECTED';
 
-    // ✅ Instant UI update
     setProducts(prev =>
       prev.map(p =>
         p._id === product._id
@@ -195,10 +235,9 @@ export default function ProductsPage() {
     try {
       await updateProduct(product._id, {
         status: newStatus,
-        approveStatus: newApproveStatus, 
+        approveStatus: newApproveStatus,
       });
     } catch (err) {
-      // rollback
       setProducts(prev =>
         prev.map(p =>
           p._id === product._id ? product : p
@@ -207,6 +246,24 @@ export default function ProductsPage() {
 
       alert('Failed to update status');
     }
+  };
+
+  const generateCombinations = (options: { name: string; options: string[] }[]): string[][] => {
+    if (!options.length) return [];
+
+    return options.reduce((acc: string[][], option: any) => {
+      const result: string[][] = [];
+
+      acc.forEach((a: string[]) => {
+        option.options.forEach((opt: string) => {
+          if (opt.trim()) {
+            result.push([...a, opt]);
+          }
+        });
+      });
+
+      return result;
+    }, [[]] as string[][]);
   };
 
   return (
@@ -237,7 +294,7 @@ export default function ProductsPage() {
         {showModel && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 
-            <div className="bg-gray-50 w-full max-w-5xl rounded-xl shadow-2xl p-6 relative">
+            <div className="bg-gray-50 w-full max-w-5xl rounded-xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto">
 
               {/* Close */}
               <button
@@ -269,28 +326,163 @@ export default function ProductsPage() {
                       />
                     </div>
 
-                    {/* PRICE + STOCK */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="font-medium block mb-1">Price</label>
-                        <input
-                          type="number"
-                          value={form.price}
-                          onChange={e => setForm({ ...form, price: e.target.value })}
-                          className="w-full border rounded-lg px-3 py-2"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="font-medium block mb-1">Stock</label>
-                        <input
-                          type="number"
-                          value={form.stock}
-                          onChange={e => setForm({ ...form, stock: e.target.value })}
-                          className="w-full border rounded-lg px-3 py-2"
-                        />
-                      </div>
+                    <div className="flex items-center gap-3">
+                      <label className="font-medium">Has Variants?</label>
+                      <input
+                        type="checkbox"
+                        checked={hasVariants}
+                        onChange={(e) => setHasVariants(e.target.checked)}
+                      />
                     </div>
+
+                    {/* PRICE + STOCK */}
+                    {!hasVariants && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="font-medium block mb-1">Price</label>
+                          <input
+                            type="number"
+                            value={form.price}
+                            onChange={e => setForm({ ...form, price: e.target.value })}
+                            className="w-full border rounded-lg px-3 py-2"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="font-medium block mb-1">Stock</label>
+                          <input
+                            type="number"
+                            value={form.stock}
+                            onChange={e => setForm({ ...form, stock: e.target.value })}
+                            className="w-full border rounded-lg px-3 py-2"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {hasVariants && (
+                      <div className="border rounded-xl p-4 bg-gray-50">
+                        <h3 className="font-semibold mb-3 text-lg">Variant Builder</h3>
+
+                        {/* STEP 1: Variant Types */}
+                        <p className="text-sm text-gray-500 mb-2">
+                          Step 1: Add variant types (Size, Color, Weight)
+                        </p>
+
+                        {variantOptions.map((vo, i) => (
+                          <div key={i} className="mb-3 border p-3 rounded bg-white">
+                            <input
+                              placeholder="Variant Type (e.g. Size)"
+                              value={vo.name}
+                              className="border px-2 py-1 mb-2 w-full"
+                              onChange={(e) => {
+                                const copy = [...variantOptions];
+                                copy[i].name = e.target.value;
+                                setVariantOptions(copy);
+                              }}
+                            />
+
+                            {vo.options.map((opt, j) => (
+                              <input
+                                key={j}
+                                placeholder="Option (e.g. M)"
+                                value={opt}
+                                className="border px-2 py-1 mb-1 w-full"
+                                onChange={(e) => {
+                                  const copy = [...variantOptions];
+                                  copy[i].options[j] = e.target.value;
+                                  setVariantOptions(copy);
+                                }}
+                              />
+                            ))}
+
+                            <button
+                              className="text-blue-600 text-sm"
+                              onClick={() => {
+                                const copy = [...variantOptions];
+                                copy[i].options.push('');
+                                setVariantOptions(copy);
+                              }}
+                            >
+                              + Add Option
+                            </button>
+                          </div>
+                        ))}
+
+                        <button
+                          className="text-indigo-600 mb-4"
+                          onClick={() =>
+                            setVariantOptions([...variantOptions, { name: '', options: [''] }])
+                          }
+                        >
+                          + Add Variant Type
+                        </button>
+
+                        {/* STEP 2: GENERATE */}
+                        <div className="mb-4">
+                          <p className="text-sm text-gray-500 mb-2">
+                            Step 2: Generate combinations
+                          </p>
+
+                          <button
+                            className="bg-indigo-600 text-white px-4 py-2 rounded"
+                            onClick={() => {
+                              const combinations = generateCombinations(variantOptions);
+
+                              setVariants(
+                                combinations.map((c: string[]) => ({
+                                  values: c,
+                                  price: '',
+                                  stock: '',
+                                }))
+                              );
+                            }}
+                          >
+                            Generate Variants
+                          </button>
+                        </div>
+
+                        {/* STEP 3: PRICE/STOCK */}
+                        {variants.length > 0 && (
+                          <div>
+                            <p className="text-sm text-gray-500 mb-2">
+                              Step 3: Set price & stock
+                            </p>
+
+                            {variants.map((v, i) => (
+                              <div key={i} className="flex gap-3 mb-2 items-center">
+                                <span className="w-40 font-medium">
+                                  {variantOptions.map((vo, index) => `${vo.name}: ${v.values[index]}`).join(' | ')}
+                                  {/* {v.values.join(' / ')} */}
+                                </span>
+
+                                <input
+                                  type="number"
+                                  placeholder="Price"
+                                  className="border px-2 py-1"
+                                  onChange={(e) => {
+                                    const copy = [...variants];
+                                    copy[i].price = Number(e.target.value);
+                                    setVariants(copy);
+                                  }}
+                                />
+
+                                <input
+                                  type="number"
+                                  placeholder="Stock"
+                                  className="border px-2 py-1"
+                                  onChange={(e) => {
+                                    const copy = [...variants];
+                                    copy[i].stock = Number(e.target.value);
+                                    setVariants(copy);
+                                  }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* DISCOUNT */}
                     <div>
@@ -349,13 +541,13 @@ export default function ProductsPage() {
                             <label key={c._id} className="flex gap-2 px-3 py-2 hover:bg-gray-100">
                               <input
                                 type="checkbox"
-                                checked={form.categories.includes(c._id)}
+                                checked={form.categories.includes(String(c._id))}
                                 onChange={() =>
                                   setForm({
                                     ...form,
-                                    categories: form.categories.includes(c._id)
-                                      ? form.categories.filter(id => id !== c._id)
-                                      : [...form.categories, c._id],
+                                    categories: form.categories.includes(String(c._id))
+                                      ? form.categories.filter(id => id !== String(c._id))
+                                      : [...form.categories, String(c._id)],
                                   })
                                 }
                               />
@@ -386,13 +578,13 @@ export default function ProductsPage() {
                             <label key={r._id} className="flex gap-2 px-3 py-2 hover:bg-gray-100">
                               <input
                                 type="checkbox"
-                                checked={form.giRegions.includes(r._id)}
+                                checked={form.giRegions.includes(String(r._id))}
                                 onChange={() =>
                                   setForm({
                                     ...form,
-                                    giRegions: form.giRegions.includes(r._id)
-                                      ? form.giRegions.filter(id => id !== r._id)
-                                      : [...form.giRegions, r._id],
+                                    giRegions: form.giRegions.includes(String(r._id))
+                                      ? form.giRegions.filter(id => id !== String(r._id))
+                                      : [...form.giRegions, String(r._id)],
                                   })
                                 }
                               />
@@ -500,8 +692,8 @@ export default function ProductsPage() {
                   <tr key={p._id} className="hover:bg-gray-50">
                     <td className="border p-2 text-center whitespace-nowrap">{index + 1}</td>
                     <td className="border p-2 text-center whitespace-nowrap">{p.title}</td>
-                    <td className="border p-2 text-center whitespace-nowrap">₹{p.price}</td>
-                    <td className="border p-2 text-center whitespace-nowrap">{p.stock}</td>
+                    <td className="border p-2 text-center whitespace-nowrap">₹{p.variants?.[0]?.price}</td>
+                    <td className="border p-2 text-center whitespace-nowrap">{p.variants?.[0]?.stock}</td>
                     <td className="border p-2 text-center whitespace-nowrap">
                       {getCategoryNames(p.categories)}
                     </td>
