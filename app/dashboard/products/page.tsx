@@ -128,8 +128,12 @@ export default function ProductsPage() {
           }
         ],
     };
-
+    console.log('Payload:', payload);
+    try{
     editingId ? await updateProduct(editingId, payload) : await createProduct(payload);
+    }catch(e){
+      alert('Failed to save the product!!');
+    }
     reset();
     setShowModel(false);
     load();
@@ -156,12 +160,31 @@ export default function ProductsPage() {
 
   const edit = (p: any) => {
     setEditingId(p._id);
+
+    const hasVar = p.variantOptions && p.variantOptions.length > 0;
+    setHasVariants(hasVar);
+
+    setVariantOptions(
+      hasVar
+        ? p.variantOptions
+        : [{ name: '', options: [''] }]
+    );
+
+    setVariants(
+      hasVar
+        ? p.variants.map((v: any) => ({
+          values: v.values,
+          price: v.price,
+          stock: v.stock,
+        }))
+        : []
+    );
+
     setForm({
       title: p.title,
       price: String(p.variants?.[0]?.price ?? ''),
       stock: String(p.variants?.[0]?.stock ?? ''),
       description: p.description,
-      // discountPercentage: String(p.discountPercentage ?? ''),
       discountPercentage: p.discountPercentage
         ? String(p.discountPercentage)
         : '',
@@ -690,11 +713,11 @@ export default function ProductsPage() {
               <tbody>
                 {products.map((p, index) => (
                   <tr key={p._id} className="hover:bg-gray-50">
-                    <td className="border p-2 text-center whitespace-nowrap">{index + 1}</td>
-                    <td className="border p-2 text-center whitespace-nowrap">{p.title}</td>
-                    <td className="border p-2 text-center whitespace-nowrap">₹{p.variants?.[0]?.price}</td>
-                    <td className="border p-2 text-center whitespace-nowrap">{p.variants?.[0]?.stock}</td>
-                    <td className="border p-2 text-center whitespace-nowrap">
+                    <td className="border p-2 whitespace-nowrap">{index + 1}</td>
+                    <td className="border p-2 whitespace-nowrap">{p.title}</td>
+                    <td className="border p-2 whitespace-nowrap">₹{p.variants?.[0]?.price}</td>
+                    <td className="border p-2 whitespace-nowrap">{p.variants?.[0]?.stock}</td>
+                    <td className="border p-2 whitespace-nowrap">
                       {getCategoryNames(p.categories)}
                     </td>
                     <td className="border p-2 text-center whitespace-nowrap">

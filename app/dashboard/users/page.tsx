@@ -27,8 +27,6 @@ export default function UsersPage() {
     const resolveStatus = (user: any) => {
         const isBlocked = Boolean(user.isBlocked);
         const isActive = Boolean(user.isActive);
-        // const isBlocked = user.isBlocked === true || user.isBlocked === 'true';
-        // const isActive = user.isActive === true || user.isActive === 'true';
 
         if (isBlocked) return 'Blocked';
         if (!isActive) return 'Inactive';
@@ -63,11 +61,11 @@ export default function UsersPage() {
 
                                     return (
                                         <tr key={user._id}>
-                                            <td className="border p-2 text-center whitespace-nowrap">{index + 1}</td>
-                                            <td className="border p-2 text-sm whitespace-nowrap">{user.name}</td>
-                                            <td className="border p-2 text-sm whitespace-nowrap">{user.email}</td>
-                                            <td className="border p-2 text-sm whitespace-nowrap">{user.phone}</td>
-                                            <td className="border p-2 text-sm">
+                                            <td className="border p-2 whitespace-nowrap">{index + 1}</td>
+                                            <td className="border p-2 whitespace-nowrap">{user.name}</td>
+                                            <td className="border p-2 whitespace-nowrap">{user.email}</td>
+                                            <td className="border p-2 whitespace-nowrap">{user.phone}</td>
+                                            <td className="border p-2 ">
                                                 {user.address?.length > 0 ? (
                                                     user.address.map((addr: any, i: number) => (
                                                         <div key={i} className="mb-2 ">
