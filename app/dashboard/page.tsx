@@ -148,7 +148,7 @@ export default function DashboardPage() {
         {/* Product Approval */}
         {
           role == 'ADMIN' && (<Link
-            href="/dashboard/sellers"
+            href="/dashboard/product-approval"
             className="rounded-xl bg-slate-50 p-6 border block hover:border-indigo-600 transition"
           >
             <div className="flex items-center justify-between">

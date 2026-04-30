@@ -106,6 +106,7 @@ export default function ProductsPage() {
       categories: form.categories,
       giRegions: form.giRegions,
       status: form.status,
+      isReturnAllowed: false,
 
       attributes: attributes.reduce((acc, item) => {
         if (item.key && item.value) acc[item.key] = item.value;
@@ -118,20 +119,44 @@ export default function ProductsPage() {
         ? variants.map(v => ({
           values: v.values,
           price: Number(v.price),
-          stock: Number(v.stock),
+          image: v.images || [],
         }))
         : [
           {
             values: ['default'],
             price: Number(form.price),
-            stock: Number(form.stock),
           }
         ],
+      initialBatches: hasVariants
+        ? variants.map(v => ({
+          variantValues: v.values,
+          stock: Number(v.stock),
+          expiryDate: null,
+        }))
+        : [
+          {
+            variantValues: ['default'],
+            stock: Number(form.stock),
+            expiryDate: null,
+          }
+        ]
     };
     console.log('Payload:', payload);
-    try{
-    editingId ? await updateProduct(editingId, payload) : await createProduct(payload);
-    }catch(e){
+    try {
+      if (editingId) {
+        const { initialBatches, ...updatePayload } = payload;
+
+        // 🔥 REMOVE stock from variants if exists
+        updatePayload.variants = updatePayload.variants.map((v: any) => ({
+          values: v.values,
+          price: v.price,
+        }));
+
+        await updateProduct(editingId, updatePayload);
+      } else {
+        await createProduct(payload);
+      }
+    } catch (e) {
       alert('Failed to save the product!!');
     }
     reset();
@@ -175,7 +200,7 @@ export default function ProductsPage() {
         ? p.variants.map((v: any) => ({
           values: v.values,
           price: v.price,
-          stock: v.stock,
+          stock: 0, // or fetch from batches later
         }))
         : []
     );
@@ -183,11 +208,9 @@ export default function ProductsPage() {
     setForm({
       title: p.title,
       price: String(p.variants?.[0]?.price ?? ''),
-      stock: String(p.variants?.[0]?.stock ?? ''),
+      stock: String(p.totalStock ?? 0),
       description: p.description,
-      discountPercentage: p.discountPercentage
-        ? String(p.discountPercentage)
-        : '',
+      discountPercentage: String(p.variants?.[0]?.discountPercentage ?? 0),
       images: p.images || [],
       categories: p.categories || [],
       giRegions: p.giRegions || [],
@@ -457,6 +480,7 @@ export default function ProductsPage() {
                                   values: c,
                                   price: '',
                                   stock: '',
+                                  images: []
                                 }))
                               );
                             }}
@@ -467,41 +491,117 @@ export default function ProductsPage() {
 
                         {/* STEP 3: PRICE/STOCK */}
                         {variants.length > 0 && (
-                          <div>
-                            <p className="text-sm text-gray-500 mb-2">
-                              Step 3: Set price & stock
+                          <div className="mt-4">
+                            <p className="text-sm text-gray-500 mb-3">
+                              Step 3: Set price, stock & image
                             </p>
 
-                            {variants.map((v, i) => (
-                              <div key={i} className="flex gap-3 mb-2 items-center">
-                                <span className="w-40 font-medium">
-                                  {variantOptions.map((vo, index) => `${vo.name}: ${v.values[index]}`).join(' | ')}
-                                  {/* {v.values.join(' / ')} */}
-                                </span>
+                            <div className="overflow-x-auto border rounded-lg">
+                              <table className="w-full text-sm">
+                                <thead className="bg-gray-100">
+                                  <tr>
+                                    <th className="p-2 text-left">Variant</th>
+                                    <th className="p-2 text-left">Price</th>
+                                    <th className="p-2 text-left">Stock</th>
+                                    <th className="p-2 text-left">Image</th>
+                                  </tr>
+                                </thead>
 
-                                <input
-                                  type="number"
-                                  placeholder="Price"
-                                  className="border px-2 py-1"
-                                  onChange={(e) => {
-                                    const copy = [...variants];
-                                    copy[i].price = Number(e.target.value);
-                                    setVariants(copy);
-                                  }}
-                                />
+                                <tbody>
+                                  {variants.map((v, i) => (
+                                    <tr key={i} className="border-t">
 
-                                <input
-                                  type="number"
-                                  placeholder="Stock"
-                                  className="border px-2 py-1"
-                                  onChange={(e) => {
-                                    const copy = [...variants];
-                                    copy[i].stock = Number(e.target.value);
-                                    setVariants(copy);
-                                  }}
-                                />
-                              </div>
-                            ))}
+                                      {/* VARIANT NAME */}
+                                      <td className="p-2 font-medium">
+                                        {variantOptions
+                                          .map((vo, index) => v.values[index])
+                                          .join(' / ')}
+                                      </td>
+
+                                      {/* PRICE */}
+                                      <td className="p-2">
+                                        <input
+                                          type="number"
+                                          className="border px-2 py-1 rounded w-24"
+                                          value={v.price}
+                                          onChange={(e) => {
+                                            const copy = [...variants];
+                                            copy[i].price = Number(e.target.value);
+                                            setVariants(copy);
+                                          }}
+                                        />
+                                      </td>
+
+                                      {/* STOCK */}
+                                      <td className="p-2">
+                                        <input
+                                          type="number"
+                                          className="border px-2 py-1 rounded w-24"
+                                          value={v.stock}
+                                          onChange={(e) => {
+                                            const copy = [...variants];
+                                            copy[i].stock = Number(e.target.value);
+                                            setVariants(copy);
+                                          }}
+                                        />
+                                      </td>
+
+                                      {/* IMAGE */}
+                                      <td className="p-2">
+                                        <div className="flex items-center gap-2">
+
+                                          <label className="cursor-pointer bg-gray-200 px-3 py-1 rounded text-sm hover:bg-gray-300">
+                                            Upload
+                                            <input
+                                              type="file"
+                                              className="hidden"
+                                              onChange={async (e) => {
+                                                if (!e.target.files?.[0]) return;
+
+                                                const res = await uploadProductImage(e.target.files[0]);
+                                                const copy = [...variants];
+
+                                                if (!copy[i].images) copy[i].images = [];
+
+                                                copy[i].images.push(res.data.url);
+
+                                                setVariants(copy); setVariants(copy);
+                                              }}
+                                            />
+                                          </label>
+
+                                          <div className="flex gap-2 flex-wrap">
+                                            {v.images?.map((img: string, idx: number) => (
+                                              <div key={idx} className="relative">
+
+                                                <img
+                                                  src={img}
+                                                  className="w-12 h-12 object-cover rounded border"
+                                                />
+
+                                                {/* 🔥 REMOVE BUTTON */}
+                                                <button
+                                                  onClick={() => {
+                                                    const copy = [...variants];
+                                                    copy[i].images.splice(idx, 1);
+                                                    setVariants(copy);
+                                                  }}
+                                                  className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center"
+                                                >
+                                                  ✕
+                                                </button>
+
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      </td>
+
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -632,42 +732,44 @@ export default function ProductsPage() {
                       />
                     </div>
 
-                    <div>
-                      <h3 className="font-medium mb-2">Product Media</h3>
+                    {!hasVariants &&
+                      (<div>
+                        <h3 className="font-medium mb-2">Product Media</h3>
 
-                      <div
-                        onClick={() => document.getElementById('product-image-input')?.click()}
-                        className="relative border-2 border-dashed rounded-xl h-56 cursor-pointer flex items-center justify-center bg-gray-50 hover:bg-gray-100"
-                      >
-                        {!form.images.length && (
-                          <div className="text-center text-gray-500">
-                            <p className="font-medium">Upload Images</p>
-                            <p className="text-sm">PNG, JPG supported</p>
-                          </div>
-                        )}
+                        <div
+                          onClick={() => document.getElementById('product-image-input')?.click()}
+                          className="relative border-2 border-dashed rounded-xl h-56 cursor-pointer flex items-center justify-center bg-gray-50 hover:bg-gray-100"
+                        >
+                          {!form.images.length && (
+                            <div className="text-center text-gray-500">
+                              <p className="font-medium">Upload Images</p>
+                              <p className="text-sm">PNG, JPG supported</p>
+                            </div>
+                          )}
 
-                        {form.images.length > 0 && (
-                          <img
-                            src={form.images[0]}
-                            className="absolute w-40 h-40 object-cover rounded-lg border shadow"
-                          />
-                        )}
-                      </div>
+                          {form.images.length > 0 && (
+                            <img
+                              src={form.images[0]}
+                              className="absolute w-40 h-40 object-cover rounded-lg border shadow"
+                            />
+                          )}
+                        </div>
 
-                      <input
-                        id="product-image-input"
-                        type="file"
-                        className="hidden"
-                        onChange={async (e) => {
-                          if (!e.target.files?.[0]) return;
-                          const res = await uploadProductImage(e.target.files[0]);
-                          setForm(prev => ({
-                            ...prev,
-                            images: [...prev.images, res.data.url],
-                          }));
-                        }}
-                      />
-                    </div>
+                        <input
+                          id="product-image-input"
+                          type="file"
+                          className="hidden"
+                          onChange={async (e) => {
+                            if (!e.target.files?.[0]) return;
+                            const res = await uploadProductImage(e.target.files[0]);
+                            setForm(prev => ({
+                              ...prev,
+                              images: [...prev.images, res.data.url],
+                            }));
+                          }}
+                        />
+                      </div>)
+                    }
 
                   </div>
                 </div>
@@ -716,7 +818,7 @@ export default function ProductsPage() {
                     <td className="border p-2 whitespace-nowrap">{index + 1}</td>
                     <td className="border p-2 whitespace-nowrap">{p.title}</td>
                     <td className="border p-2 whitespace-nowrap">₹{p.variants?.[0]?.price}</td>
-                    <td className="border p-2 whitespace-nowrap">{p.variants?.[0]?.stock}</td>
+                    <td className="border p-2 whitespace-nowrap">{p.totalStock ?? 0}</td>
                     <td className="border p-2 whitespace-nowrap">
                       {getCategoryNames(p.categories)}
                     </td>

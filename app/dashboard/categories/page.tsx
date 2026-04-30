@@ -30,11 +30,13 @@ export default function CategoriesPage() {
     description: '',
     parentId: '' as string,
     image: '' as string | '',
+    requiresExpiry: false,
+    requiresReturnPolicy: false,
   });
 
   const isFormValid = () => {
-    if (!form.name.trim()) return false;
-    if (!form.description.trim()) return false;
+    if (!form.name?.trim()) return false;
+    if (!form.description?.trim()) return false;
     if (!form.image && !editingId) return false;
     return true;
   };
@@ -46,9 +48,11 @@ export default function CategoriesPage() {
     }
     const payload = {
       name: form.name,
-      description: form.description,
+      description: form.description || '',
       parentId: form.parentId || null,
       image: form.image || null,
+      requiresExpiry: form.requiresExpiry || false,
+      requiresReturnPolicy: form.requiresReturnPolicy || false,
     };
 
     if (editingId) {
@@ -64,7 +68,7 @@ export default function CategoriesPage() {
 
   const reset = () => {
     setEditingId(null);
-    setForm({ name: '', description: '', parentId: '', image: '' });
+    setForm({ name: '', description: '', parentId: '', image: '', requiresExpiry: false, requiresReturnPolicy: false });
     setImageInputKey(prev => prev + 1);
   };
 
@@ -72,9 +76,11 @@ export default function CategoriesPage() {
     setEditingId(cat._id);
     setForm({
       name: cat.name,
-      description: cat.description,
+      description: cat.description || '',
       parentId: cat.parentId || '',
       image: cat.image || '',
+      requiresExpiry: cat.requiresExpiry || false,
+      requiresReturnPolicy: cat.requiresReturnPolicy || false,
     });
     setShowModel(true);
   };
@@ -188,12 +194,12 @@ export default function CategoriesPage() {
                   </th>
                   <th className="border p-2 bg-gray-100">Sub Category</th>
                   <th className="border p-2 bg-gray-100">Child Category</th>
+                  <th className="border p-2 bg-gray-100">Rules</th>
                   <th className="border p-2 bg-gray-100">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {/* {categories.map((c, index) => { */}
-                 {filteredCategories.map((c, index) => {
+                {filteredCategories.map((c, index) => {
                   const { main, sub, child } = resolveLevels(c);
 
                   return (
@@ -202,6 +208,29 @@ export default function CategoriesPage() {
                       <td className="border p-2 text-center whitespace-nowrap">{main}</td>
                       <td className="border p-2 text-center whitespace-nowrap">{sub}</td>
                       <td className="border p-2 text-center whitespace-nowrap">{child}</td>
+                      <td className="border p-2 text-center whitespace-nowrap">
+                        <div className="flex justify-center gap-2 flex-wrap">
+
+                          {c.requiresExpiry && (
+                            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">
+                              Expiry
+                            </span>
+                          )}
+
+                          {c.requiresReturnPolicy && (
+                            <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">
+                              Return
+                            </span>
+                          )}
+
+                          {!c.requiresExpiry && !c.requiresReturnPolicy && (
+                            <span className="bg-gray-200 text-gray-600 px-2 py-1 rounded text-xs">
+                              None
+                            </span>
+                          )}
+
+                        </div>
+                      </td>
                       <td className="border p-2 text-center">
                         <button onClick={() => edit(c)} className="text-blue-600 mr-3">
                           Edit
@@ -303,6 +332,33 @@ export default function CategoriesPage() {
                             ))}
                         </div>
                       )}
+                    </div>
+
+                    {/* Category Rules */}
+                    <div className="space-y-3">
+                      <label className="font-medium block">Category Rules</label>
+
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={form.requiresExpiry}
+                          onChange={(e) =>
+                            setForm({ ...form, requiresExpiry: e.target.checked })
+                          }
+                        />
+                        <span>Requires Expiry</span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={form.requiresReturnPolicy}
+                          onChange={(e) =>
+                            setForm({ ...form, requiresReturnPolicy: e.target.checked })
+                          }
+                        />
+                        <span>Requires Return Policy</span>
+                      </div>
                     </div>
 
                   </div>
