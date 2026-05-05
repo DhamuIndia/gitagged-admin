@@ -815,11 +815,11 @@ export default function ProductsPage() {
               <tbody>
                 {products.map((p, index) => (
                   <tr key={p._id} className="hover:bg-gray-50">
-                    <td className="border p-2 whitespace-nowrap">{index + 1}</td>
-                    <td className="border p-2 whitespace-nowrap">{p.title}</td>
-                    <td className="border p-2 whitespace-nowrap">₹{p.variants?.[0]?.price}</td>
-                    <td className="border p-2 whitespace-nowrap">{p.totalStock ?? 0}</td>
-                    <td className="border p-2 whitespace-nowrap">
+                    <td className="border text-center p-2 whitespace-nowrap">{index + 1}</td>
+                    <td className="border text-center p-2 whitespace-nowrap">{p.title}</td>
+                    <td className="border text-center p-2 whitespace-nowrap">₹{p.variants?.[0]?.price}</td>
+                    <td className="border text-center p-2 whitespace-nowrap">{p.totalStock ?? 0}</td>
+                    <td className="border text-center p-2 whitespace-nowrap">
                       {getCategoryNames(p.categories)}
                     </td>
                     <td className="border p-2 text-center whitespace-nowrap">

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAllOrders, updateOrderStatus } from '@/lib/orders';
+import { getAllOrders, updateItemStatus } from '@/lib/orders';
 
 const STATUS_COLORS: any = {
   PLACED: 'bg-blue-600',
@@ -50,14 +50,10 @@ export default function OrdersPage() {
     }
   };
 
-  const changeStatus = async (orderId: string, status: string) => {
-    await updateOrderStatus(orderId, status);
-    loadOrders();
-  };
-
   //for searching orders..
   const filteredOrders = orders.filter(order => {
     const searchLower = search.toLowerCase();
+    console.log(order.items);
     return (
       order._id?.toLowerCase().includes(searchLower) ||
       order.userId?.name?.toLowerCase().includes(searchLower) ||
@@ -66,7 +62,6 @@ export default function OrdersPage() {
       order.receiverAddress?.city?.toLowerCase().includes(searchLower) ||
       order.receiverAddress?.state?.toLowerCase().includes(searchLower) ||
       order.receiverAddress?.pincode?.toLowerCase().includes(searchLower)
-      // order.userId?.address?.toLowerCase().includes(searchLower)
     );
   })
 
@@ -80,7 +75,7 @@ export default function OrdersPage() {
           <input
             type="text"
             placeholder="🔍Search..."
-            value={search} 
+            value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="border rounded-lg px-4 py-2 w-80 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
@@ -105,7 +100,6 @@ export default function OrdersPage() {
                 <th className="border p-2 bg-gray-100 whitespace-nowrap">Amount</th>
                 <th className="border p-2 bg-gray-100 whitespace-nowrap">Status</th>
                 <th className="border p-2 bg-gray-100 whitespace-nowrap">Created</th>
-                <th className="border p-2 bg-gray-100 whitespace-nowrap">Action</th>
               </tr>
             </thead>
 
@@ -134,15 +128,40 @@ export default function OrdersPage() {
                           {order.receiverAddress?.pincode}
                         </p>
                       </td>
-                      {/* <td className='border p-2 text-center whitespace-nowrap'>{order.userId?.address || '—'}</td> */}
                     </>
                   )
                   }
 
-                  <td className='border p-2 text-center whitespace-nowrap'>
+                  <td className="border p-2 text-left">
                     {order.items?.map((item: any) => (
-                      <div key={item._id}>
-                        {item.productId?.title} × {item.quantity}
+                      <div key={item._id} className="mb-3 p-2 border rounded bg-gray-50">
+
+                        {/* PRODUCT */}
+                        <div className="font-medium">
+                          {item.title}
+                        </div>
+
+                        {/* QUANTITY */}
+                        <div className="text-sm text-gray-500">
+                          Qty: {item.quantity}
+                        </div>
+
+                        {/* STATUS DROPDOWN */}
+                        {role === 'SELLER' && (
+                          <select
+                            value={item.status}
+                            onChange={async (e) => {
+                              await updateItemStatus(item._id, e.target.value);
+                              loadOrders();
+                            }}
+                            className="mt-2 border px-2 py-1 rounded w-full"
+                          >
+                            <option value="PLACED">PLACED</option>
+                            <option value="SHIPPED">SHIPPED</option>
+                            <option value="DELIVERED">DELIVERED</option>
+                            <option value="CANCELLED">CANCELLED</option>
+                          </select>
+                        )}
                       </div>
                     ))}
                   </td>
@@ -161,21 +180,6 @@ export default function OrdersPage() {
 
                   <td className="border p-2 text-center text-sm whitespace-nowrap">
                     {new Date(order.createdAt).toLocaleDateString()}
-                  </td>
-
-                  <td className="border p-2 text-center whitespace-nowrap">
-                    <select
-                      value={order.status}
-                      onChange={(e) =>
-                        changeStatus(order._id, e.target.value)
-                      }
-                      className="border rounded px-2 py-1"
-                    >
-                      <option value="PLACED">PLACED</option>
-                      <option value="SHIPPED">SHIPPED</option>
-                      <option value="DELIVERED">DELIVERED</option>
-                      <option value="CANCELLED">CANCELLED</option>
-                    </select>
                   </td>
                 </tr>
               ))}

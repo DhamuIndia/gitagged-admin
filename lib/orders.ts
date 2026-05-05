@@ -37,8 +37,6 @@ export const getAllOrders = () => {
   }
 };
 
-export const updateOrderStatus = (
-  orderId: string,
-  status: string
-) =>
-  API.patch(`/orders/${orderId}/status`, { status });
+export const updateItemStatus = (itemId: string, status: string) => {
+  return API.patch(`/orders/item/${itemId}/status`, { status });
+};

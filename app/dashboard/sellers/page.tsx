@@ -48,6 +48,15 @@ export default function SellersPage() {
     load();
   };
 
+  const Row = ({ label, value }: any) => (
+    <div className="flex justify-between gap-4">
+      <span className="text-gray-500">{label}</span>
+      <span className="font-medium text-gray-800 text-right">
+        {value || '-'}
+      </span>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -98,23 +107,10 @@ export default function SellersPage() {
                   <td className="border p-2 text-center whitespace-nowrap">
                     <button
                       onClick={() => setSelectedSeller(s)}
-                      className="text-blue-600 pr-4"
+                      className="bg-indigo-600 text-white px-3 py-1 rounded"
                     >
                       View
                     </button>
-                    <select
-                      value={s.status}
-                      onChange={(e) => changeStatus(s._id, e.target.value)}
-                      className="border rounded px-2 py-1"
-                    >
-                      <option value="APPROVED">APPROVED</option>
-                      {
-                        s.status === 'PENDING' && (
-                          <option value="PENDING">PENDING</option>
-                        )
-                      }
-                      <option value="REJECTED">REJECTED</option>
-                    </select>
                   </td>
                 </tr>
               ))}
@@ -124,43 +120,107 @@ export default function SellersPage() {
 
         {/* MODAL */}
         {selectedSeller && (
-          <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-            <div className="bg-white rounded-xl p-6 w-[600px] relative">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 
+            <div className="bg-white rounded-2xl shadow-2xl w-[800px] max-h-[90vh] overflow-y-auto relative p-6">
+
+              {/* CLOSE */}
               <button
                 onClick={() => setSelectedSeller(null)}
-                className="absolute top-4 right-4 text-gray-500"
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-lg"
               >
                 ✕
               </button>
 
-              <h2 className="text-xl font-semibold mb-4">
-                Seller Details
-              </h2>
+              {/* HEADER */}
+              <div className="mb-6 border-b pb-4">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Seller Details
+                </h2>
+                <p className="text-sm text-gray-500">
+                  Complete information about the seller
+                </p>
+              </div>
 
-              <div className="space-y-3 text-sm">
+              {/* GRID SECTIONS */}
+              <div className="grid grid-cols-2 gap-6 text-sm">
 
-                <p><strong>Business: </strong> {selectedSeller.businessName}</p>
-                <p><strong>Business Type: </strong> {selectedSeller.businessType}</p>
-                <p><strong>GST: </strong> {selectedSeller.gstNumber}</p>
-                <p><strong>PAN: </strong> {selectedSeller.panNumber}</p>
-                <p><strong>Account Holder: </strong> {selectedSeller.accountHolderName}</p>
-                <p><strong>Account No: </strong> {selectedSeller.bankAccountNumber}</p>
-                <p><strong>IFSC: </strong> {selectedSeller.ifscCode}</p>
-                <p><strong>Mobile: </strong> {selectedSeller.mobileNumber}</p>
-                <p><strong>Product Description: </strong>{selectedSeller.productDescription}</p>
+                {/* BUSINESS INFO */}
+                <div className="bg-gray-50 p-4 rounded-xl">
+                  <h3 className="font-semibold text-gray-700 mb-3">
+                    Business Information
+                  </h3>
 
+                  <div className="space-y-2">
+                    <Row label="Business Name" value={selectedSeller.businessName} />
+                    <Row label="Business Type" value={selectedSeller.businessType} />
+                    <Row label="GST Number" value={selectedSeller.gstNumber} />
+                    <Row label="PAN Number" value={selectedSeller.panNumber} />
+                    <Row label="Description" value={selectedSeller.productDescription} />
+                  </div>
+                </div>
+
+                {/* CONTACT INFO */}
+                <div className="bg-gray-50 p-4 rounded-xl">
+                  <h3 className="font-semibold text-gray-700 mb-3">
+                    Contact Information
+                  </h3>
+
+                  <div className="space-y-2">
+                    <Row label="Account Holder" value={selectedSeller.accountHolderName} />
+                    <Row label="Mobile" value={selectedSeller.mobileNumber} />
+                    <Row label="Email" value={selectedSeller.email} />
+                  </div>
+                </div>
+
+                {/* BANK INFO */}
+                <div className="bg-gray-50 p-4 rounded-xl col-span-2">
+                  <h3 className="font-semibold text-gray-700 mb-3">
+                    Banking Details
+                  </h3>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <Row label="Account Number" value={selectedSeller.bankAccountNumber} />
+                    <Row label="IFSC Code" value={selectedSeller.ifscCode} />
+                  </div>
+                </div>
+
+                {/* SIGNATURE */}
                 {selectedSeller.digitalSignatureUrl && (
-                  <div className="pt-2">
-                    <strong>Digital Signature:</strong>
-                    <img
-                      src={selectedSeller.digitalSignatureUrl}
-                      className="mt-2 h-24 border rounded"
-                    />
+                  <div className="bg-gray-50 p-4 rounded-xl col-span-2">
+                    <h3 className="font-semibold text-gray-700 mb-3">
+                      Digital Signature
+                    </h3>
+
+                    <div className="border rounded-lg p-3 bg-white flex justify-center">
+                      <img
+                        src={selectedSeller.digitalSignatureUrl}
+                        className="h-24 object-contain"
+                      />
+                    </div>
                   </div>
                 )}
 
               </div>
+
+              {/* ACTION BUTTONS */}
+              <div className="flex justify-end gap-3 mt-6 border-t pt-4">
+                <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                  Approve
+                </button>
+
+                <button className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                  Reject
+                </button>
+
+                <button
+                  onClick={() => setSelectedSeller(null)}
+                  className="border px-4 py-2 rounded-lg"
+                >
+                  Close
+                </button>
+              </div>
+
             </div>
           </div>
         )}

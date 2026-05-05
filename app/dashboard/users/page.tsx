@@ -61,11 +61,11 @@ export default function UsersPage() {
 
                                     return (
                                         <tr key={user._id}>
-                                            <td className="border p-2 whitespace-nowrap">{index + 1}</td>
-                                            <td className="border p-2 whitespace-nowrap">{user.name}</td>
-                                            <td className="border p-2 whitespace-nowrap">{user.email}</td>
-                                            <td className="border p-2 whitespace-nowrap">{user.phone}</td>
-                                            <td className="border p-2 ">
+                                            <td className="border p-2 whitespace-nowrap text-center">{index + 1}</td>
+                                            <td className="border p-2 whitespace-nowrap text-center">{user.name}</td>
+                                            <td className="border p-2 whitespace-nowrap text-center">{user.email}</td>
+                                            <td className="border p-2 whitespace-nowrap text-center">{user.phone}</td>
+                                            <td className="border p-2 text-center">
                                                 {user.address?.length > 0 ? (
                                                     user.address.map((addr: any, i: number) => (
                                                         <div key={i} className="mb-2 ">
