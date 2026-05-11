@@ -5,6 +5,7 @@ import { getProducts, createProduct, updateProduct, deleteProduct, getSellerProd
 import { getCategories } from '@/lib/categories';
 import { getRegions } from '@/lib/gi-regions';
 import { uploadProductImage } from '@/lib/upload';
+import React from 'react';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -19,6 +20,7 @@ export default function ProductsPage() {
   const [variantOptions, setVariantOptions] = useState([
     { name: '', options: [''] }
   ]);
+  const [viewingProduct, setViewingProduct] = useState<any | null>(null);
 
   const [variants, setVariants] = useState<any[]>([]);
 
@@ -787,6 +789,104 @@ export default function ProductsPage() {
           </div>
         )}
 
+        {/* VIEW PRODUCT DETAILS */}
+        {viewingProduct && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+            <div className="bg-white w-full max-w-3xl rounded-xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+
+              {/* CLOSE */}
+              <button
+                onClick={() => setViewingProduct(null)}
+                className="absolute top-4 right-4 text-gray-500 hover:text-black"
+              >
+                ✕
+              </button>
+
+              <h2 className="text-2xl font-semibold mb-6">
+                {viewingProduct.title}
+              </h2>
+
+              {/* NON VARIANT PRODUCT */}
+              {(!viewingProduct.variantOptions ||
+                viewingProduct.variantOptions.length === 0) && (
+
+                  <div className="border rounded-xl p-4 bg-gray-50">
+
+                    <p className="font-medium mb-2">
+                      Non Variant Product
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-4">
+
+                      <div>
+                        <p className="text-sm text-gray-500">Price</p>
+                        <p className="font-semibold">
+                          ₹{viewingProduct.variants?.[0]?.price}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-sm text-gray-500">Stock</p>
+                        <p className="font-semibold">
+                          {viewingProduct.totalStock}
+                        </p>
+                      </div>
+
+                    </div>
+                  </div>
+                )}
+
+              {/* VARIANT PRODUCT */}
+              {viewingProduct.variantOptions?.length > 0 && (
+                <div>
+
+                  <div className="mb-4">
+                    <span className="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-sm font-medium">
+                      Variant Product
+                    </span>
+                  </div>
+
+                  <div className="overflow-x-auto border rounded-lg">
+
+                    <table className="w-full text-sm">
+
+                      <thead className="bg-gray-100">
+                        <tr>
+                          <th className="p-3 text-left">Variant</th>
+                          <th className="p-3 text-left">Price</th>
+                          <th className="p-3 text-left">Stock</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {viewingProduct.variants.map((v: any, i: number) => (
+                          <tr key={i} className="border-t">
+
+                            <td className="p-3">
+                              {v.values.join(' / ')}
+                            </td>
+
+                            <td className="p-3">
+                              ₹{v.price}
+                            </td>
+
+                            <td className="p-3">
+                              {v.stock ?? '-'}
+                            </td>
+
+                          </tr>
+                        ))}
+                      </tbody>
+
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* LIST */}
         <div className="bg-white rounded-xl shadow p-6">
           <h2 className="font-semibold mb-4">Product List</h2>
@@ -796,13 +896,17 @@ export default function ProductsPage() {
                 <tr>
                   <th className="border p-2">S.No</th>
                   <th className="border p-2">Title</th>
-                  <th className="border p-2">Price</th>
                   <th className="border p-2">Stock</th>
                   <th className="border p-2">Category</th>
                   <th className="border p-2">Approve Status</th>
                   {
                     role === 'ADMIN' && (
                       <th className="border p-2">Status</th>
+                    )
+                  }
+                  {
+                    role === 'SELLER' && (
+                      <th className="border p-2"> Update Status</th>
                     )
                   }
                   {
@@ -814,53 +918,107 @@ export default function ProductsPage() {
               </thead>
               <tbody>
                 {products.map((p, index) => (
-                  <tr key={p._id} className="hover:bg-gray-50">
-                    <td className="border text-center p-2 whitespace-nowrap">{index + 1}</td>
-                    <td className="border text-center p-2 whitespace-nowrap">{p.title}</td>
-                    <td className="border text-center p-2 whitespace-nowrap">₹{p.variants?.[0]?.price}</td>
-                    <td className="border text-center p-2 whitespace-nowrap">{p.totalStock ?? 0}</td>
-                    <td className="border text-center p-2 whitespace-nowrap">
-                      {getCategoryNames(p.categories)}
-                    </td>
-                    <td className="border p-2 text-center whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 rounded-full text-white ${p.approveStatus === 'APPROVED'
-                          ? 'bg-green-600'
-                          : p.approveStatus === 'PENDING'
-                            ? 'bg-yellow-500'
-                            : 'bg-red-600'
-                          }`}
-                      >{p.approveStatus}</span>
-                    </td>
-                    {
-                      role === 'ADMIN' && (
-                        <td className="border p-2 text-center whitespace-nowrap">
-                          <div className="flex items-center justify-center">
-                            <div
-                              onClick={() => toggleStatus(p)}
-                              className={`w-14 h-7 flex items-center rounded-full p-1 cursor-pointer transition ${p.status === 'active' ? 'bg-green-500' : 'bg-red-500'
+                  <React.Fragment key={p._id}>
+                    <tr key={p._id} className="hover:bg-gray-50">
+                      <td className="border text-center p-2 whitespace-nowrap">{index + 1}</td>
+                      <td className="border text-center p-2 whitespace-nowrap">{p.title}</td>
+                      <td className="border text-center p-2 whitespace-nowrap">{p.totalStock ?? 0}</td>
+                      <td className="border text-center p-2 whitespace-nowrap">
+                        {getCategoryNames(p.categories)}
+                      </td>
+                      <td className="border p-2 text-center whitespace-nowrap">
+                        <span
+                          className={`px-2 py-1 rounded-full text-white ${p.approveStatus === 'APPROVED'
+                            ? 'bg-green-600'
+                            : p.approveStatus === 'PENDING'
+                              ? 'bg-yellow-500'
+                              : 'bg-red-600'
+                            }`}
+                        >{p.approveStatus}</span>
+                      </td>
+                      {
+                        role === 'ADMIN' && (
+                          <td className="border p-2 text-center whitespace-nowrap">
+                            <div className="flex items-center justify-center">
+                              <div
+                                onClick={() => toggleStatus(p)}
+                                className={`w-14 h-7 flex items-center rounded-full p-1 cursor-pointer transition ${p.status === 'active' ? 'bg-green-500' : 'bg-red-500'
+                                  }`}
+                              >
+                                <div
+                                  className={`bg-white w-5 h-5 rounded-full shadow-md transform transition ${p.status === 'active' ? 'translate-x-7' : 'translate-x-0'
+                                    }`}
+                                />
+                              </div>
+                            </div>
+                          </td>
+                        )
+                      }
+                      {
+                        role ==='SELLER' && (
+                          <td className="border p-2 text-center whitespace-nowrap">
+                            <span
+                              className={`px-2 py-1 rounded-full text-white ${p.updateRequestStatus === 'APPROVED'
+                                ? 'bg-green-600'
+                                : p.updateRequestStatus === 'PENDING'
+                                  ? 'bg-yellow-500'
+                                  : 'bg-red-600'
                                 }`}
                             >
-                              <div
-                                className={`bg-white w-5 h-5 rounded-full shadow-md transform transition ${p.status === 'active' ? 'translate-x-7' : 'translate-x-0'
-                                  }`}
-                              />
+                              {p.updateRequestStatus}
+                            </span>
+                          </td>
+                        )
+                      }
+                      {
+                        role === 'SELLER' && (
+                          <td className="border p-2 text-center whitespace-nowrap">
+                            <button onClick={() => edit(p)} className="text-blue-600 mr-3">Edit</button>
+                            <button onClick={() => remove(p._id)} className="text-red-600 mr-3">Delete</button>
+                            <button
+                              onClick={() => setViewingProduct(p)}
+                              className="text-green-600 mr-3"
+                            >
+                              View
+                            </button>
+                          </td>
+                        )
+                      }
+                    </tr>
+
+                    {/* REJECTION REASON */}
+                    {role === 'SELLER' && p.updateRequestStatus === 'REJECTED' &&
+                      p.rejectionReason && (
+                        <tr className="bg-red-50/40">
+                          <td
+                            colSpan={7}
+                            className="border-x border-b px-4 py-3"
+                          >
+
+                            <div className="flex items-start gap-3 border-l-4 border-red-500 pl-3">
+
+                              <div className="text-red-500 text-lg">
+                                ⚠️
+                              </div>
+
+                              <div>
+                                <p className="text-sm font-semibold text-red-700">
+                                  Product Update Rejected
+                                </p>
+
+                                <p className="text-sm text-gray-700 mt-1">
+                                  {p.rejectionReason}
+                                </p>
+                              </div>
+
                             </div>
-                          </div>
-                        </td>
-                      )
-                    }
-                    {
-                      role === 'SELLER' && (
-                        <td className="border p-2 text-center whitespace-nowrap">
-                          <button onClick={() => edit(p)} className="text-blue-600 mr-3">Edit</button>
-                          <button onClick={() => remove(p._id)} className="text-red-600">Delete</button>
-                        </td>
-                      )
-                    }
-                  </tr>
+
+                          </td>
+                        </tr>
+                      )}
+                  </React.Fragment>
                 ))}
-              </tbody>
+              </tbody >
             </table>
           </div>
         </div>

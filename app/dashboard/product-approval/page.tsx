@@ -640,9 +640,6 @@ export default function ProductApproval() {
                                         <b>Price:</b> ₹{v.price}
                                       </p>
 
-                                      {/* <p>
-                                        <b>Discount:</b> {v.discountPercentage || 0}%
-                                      </p> */}
                                       <p>
                                         <b>Discount:</b>{" "}
                                         {v.discountPercentage ??
