@@ -199,11 +199,21 @@ export default function ProductsPage() {
 
     setVariants(
       hasVar
-        ? p.variants.map((v: any) => ({
-          values: v.values,
-          price: v.price,
-          stock: 0, // or fetch from batches later
-        }))
+        ? p.variants.map((v: any) => {
+
+          const matchedBatch = p.batches?.find(
+            (b: any) =>
+              JSON.stringify(b.variantValues) ===
+              JSON.stringify(v.values)
+          );
+
+          return {
+            values: v.values,
+            price: v.price,
+            stock: matchedBatch?.stock ?? 0,
+            images: v.images || [],
+          };
+        })
         : []
     );
 
@@ -860,23 +870,32 @@ export default function ProductsPage() {
                       </thead>
 
                       <tbody>
-                        {viewingProduct.variants.map((v: any, i: number) => (
-                          <tr key={i} className="border-t">
+                        {viewingProduct.variants.map((v: any, i: number) => {
 
-                            <td className="p-3">
-                              {v.values.join(' / ')}
-                            </td>
+                          const matchedBatch = viewingProduct.batches?.find(
+                            (b: any) =>
+                              JSON.stringify(b.variantValues) ===
+                              JSON.stringify(v.values)
+                          );
 
-                            <td className="p-3">
-                              ₹{v.price}
-                            </td>
+                          return (
+                            <tr key={i} className="border-t">
 
-                            <td className="p-3">
-                              {v.stock ?? '-'}
-                            </td>
+                              <td className="p-3">
+                                {v.values.join(' / ')}
+                              </td>
 
-                          </tr>
-                        ))}
+                              <td className="p-3">
+                                ₹{v.price}
+                              </td>
+
+                              <td className="p-3">
+                                {matchedBatch?.stock ?? 0}
+                              </td>
+
+                            </tr>
+                          );
+                        })}
                       </tbody>
 
                     </table>
@@ -898,17 +917,14 @@ export default function ProductsPage() {
                   <th className="border p-2">Title</th>
                   <th className="border p-2">Stock</th>
                   <th className="border p-2">Category</th>
+                  <th className="border p-2">Variant Details</th>
                   <th className="border p-2">Approve Status</th>
                   {
                     role === 'ADMIN' && (
                       <th className="border p-2">Status</th>
                     )
                   }
-                  {
-                    role === 'SELLER' && (
-                      <th className="border p-2"> Update Status</th>
-                    )
-                  }
+                  <th className="border p-2"> Update Status</th>
                   {
                     role === 'SELLER' && (
                       <th className="border p-2">Actions</th>
@@ -926,13 +942,21 @@ export default function ProductsPage() {
                       <td className="border text-center p-2 whitespace-nowrap">
                         {getCategoryNames(p.categories)}
                       </td>
+                      <td className="border p-2 text-center whitespace-nowrap ">
+                        <button
+                          onClick={() => setViewingProduct(p)}
+                          className="mr-3 bg-blue-500 text-white rounded px-3 py-1 text-sm"
+                        >
+                          View
+                        </button>
+                      </td>
                       <td className="border p-2 text-center whitespace-nowrap">
                         <span
                           className={`px-2 py-1 rounded-full text-white ${p.approveStatus === 'APPROVED'
-                            ? 'bg-green-600'
+                            ? 'bg-green-500'
                             : p.approveStatus === 'PENDING'
                               ? 'bg-yellow-500'
-                              : 'bg-red-600'
+                              : 'bg-red-500'
                             }`}
                         >{p.approveStatus}</span>
                       </td>
@@ -954,33 +978,30 @@ export default function ProductsPage() {
                           </td>
                         )
                       }
-                      {
-                        role ==='SELLER' && (
-                          <td className="border p-2 text-center whitespace-nowrap">
-                            <span
-                              className={`px-2 py-1 rounded-full text-white ${p.updateRequestStatus === 'APPROVED'
-                                ? 'bg-green-600'
-                                : p.updateRequestStatus === 'PENDING'
-                                  ? 'bg-yellow-500'
-                                  : 'bg-red-600'
-                                }`}
-                            >
-                              {p.updateRequestStatus}
-                            </span>
-                          </td>
-                        )
-                      }
+                      <td className="border p-2 text-center whitespace-nowrap">
+
+                        {p.isUpdatePending ? (
+                          <span className="px-2 py-1 rounded-full text-white bg-yellow-500">
+                            PENDING
+                          </span>
+                        ) : p.updateRequestStatus === 'REJECTED' ? (
+                          <span className="px-2 py-1 rounded-full text-white bg-red-600">
+                            REJECTED
+                          </span>
+                        ) : p.updateRequestStatus === 'APPROVED' ? (
+                          <span className="px-2 py-1 rounded-full text-white bg-green-600">
+                            APPROVED
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">--</span>
+                        )}
+
+                      </td>
                       {
                         role === 'SELLER' && (
                           <td className="border p-2 text-center whitespace-nowrap">
                             <button onClick={() => edit(p)} className="text-blue-600 mr-3">Edit</button>
                             <button onClick={() => remove(p._id)} className="text-red-600 mr-3">Delete</button>
-                            <button
-                              onClick={() => setViewingProduct(p)}
-                              className="text-green-600 mr-3"
-                            >
-                              View
-                            </button>
                           </td>
                         )
                       }

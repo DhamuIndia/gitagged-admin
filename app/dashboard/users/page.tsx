@@ -93,9 +93,9 @@ export default function UsersPage() {
                                             {/* <td className="border p-2 text-center whitespace-nowrap">{user.address}</td> */}
 
                                             <td className="border p-2 text-center">
-                                                <span className={`px-2 py-1 rounded-full text-white ${status === 'Active' ? 'bg-green-600' :
-                                                    status === 'Inactive' ? 'bg-yellow-600' :
-                                                        'bg-red-600'
+                                                <span className={`px-2 py-1 rounded-full text-white ${status === 'Active' ? 'bg-green-500' :
+                                                    status === 'Inactive' ? 'bg-yellow-500' :
+                                                        'bg-red-500'
                                                     }`}>
                                                     {status}
                                                 </span>
