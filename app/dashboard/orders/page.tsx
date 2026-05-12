@@ -23,11 +23,11 @@ export default function OrdersPage() {
     setRole(stroredRole);
 
     loadOrders();
-    // const interval = setInterval(() => {
-    //   loadOrders();
-    // }, 3000); // every 3 seconds
+    const interval = setInterval(() => {
+      loadOrders();
+    }, 3000); // every 3 seconds
 
-    // return () => clearInterval(interval);
+    return () => clearInterval(interval);
   }, []);
 
   const loadOrders = async () => {
@@ -71,14 +71,23 @@ export default function OrdersPage() {
 
         <h1 className="text-2xl font-semibold mb-6 inline-block">Orders</h1>
 
-        <div className="flex justify-start mb-4">
-          <input
-            type="text"
-            placeholder="🔍Search..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="border rounded-lg px-4 py-2 w-80 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
+        <div className="flex justify-start mb-5">
+          <div className="relative w-full max-w-md">
+
+            <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+              🔍
+            </span>
+
+            <input
+              type="text"
+              placeholder="Search orders..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 bg-white shadow-sm text-sm
+ placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all
+      "
+            />
+          </div>
         </div>
 
         <div className="bg-white rounded-xl shadow p-6 overflow-x-auto no-scrollbar">
