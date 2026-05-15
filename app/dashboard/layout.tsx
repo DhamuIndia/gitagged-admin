@@ -120,6 +120,17 @@ export default function DashboardLayout({
             )
           }
 
+          {
+            role == 'SELLER' && (
+              <Link
+                href="/dashboard/seller-profile"
+                className={linkClass('/dashboard/seller-profile')}
+              >
+                🤝 Seller Profile
+              </Link>
+            )
+          }
+
         </nav>
       </aside>
 

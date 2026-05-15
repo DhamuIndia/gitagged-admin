@@ -29,7 +29,7 @@ export default function ProductsPage() {
     price: '',
     stock: '',
     description: '',
-    discountPercentage: '',
+    discountPercentage: '0',
     images: [] as string[],
     categories: [] as string[],
     giRegions: [] as string[],
@@ -70,6 +70,7 @@ export default function ProductsPage() {
     if (!hasVariants) {
       if (!form.price || Number(form.price) <= 0) return false;
       if (!form.stock || Number(form.stock) < 0) return false;
+      if (form.images.length === 0) return false;
     }
 
     if (hasVariants) {
@@ -78,6 +79,7 @@ export default function ProductsPage() {
       for (const v of variants) {
         if (!v.price || v.price <= 0) return false;
         if (v.stock < 0) return false;
+        if (!v.images || v.images.length === 0) return false;
       }
     }
     if (form.categories.length === 0) return false;
@@ -119,9 +121,10 @@ export default function ProductsPage() {
 
       variants: hasVariants
         ? variants.map(v => ({
-          values: v.values,
+          values: [...v.values].sort(),
           price: Number(v.price),
-          image: v.images || [],
+          discountPercentage: Number(v.discountPercentage) || 0,
+          images: v.images || [],
         }))
         : [
           {
@@ -131,7 +134,7 @@ export default function ProductsPage() {
         ],
       initialBatches: hasVariants
         ? variants.map(v => ({
-          variantValues: v.values,
+          variantValues: [...v.values].sort(),
           stock: Number(v.stock),
           expiryDate: null,
         }))
@@ -152,9 +155,18 @@ export default function ProductsPage() {
         updatePayload.variants = updatePayload.variants.map((v: any) => ({
           values: v.values,
           price: v.price,
+          discountPercentage: v.discountPercentage || 0,
+          images: v.images || [],
         }));
 
-        await updateProduct(editingId, updatePayload);
+        // await updateProduct(editingId, updatePayload);
+        const res = await updateProduct(editingId, updatePayload);
+
+        setProducts(prev =>
+          prev.map(p =>
+            p._id === editingId ? res.data : p
+          )
+        );
       } else {
         await createProduct(payload);
       }
@@ -163,7 +175,7 @@ export default function ProductsPage() {
     }
     reset();
     setShowModel(false);
-    load();
+    // load();
   };
 
   const reset = () => {
@@ -173,7 +185,7 @@ export default function ProductsPage() {
       price: '',
       stock: '',
       description: '',
-      discountPercentage: '',
+      discountPercentage: '0',
       images: [],
       categories: [],
       giRegions: [],
@@ -203,14 +215,15 @@ export default function ProductsPage() {
 
           const matchedBatch = p.batches?.find(
             (b: any) =>
-              JSON.stringify(b.variantValues) ===
-              JSON.stringify(v.values)
+              [...b.variantValues].sort().join('|') ===
+              [...v.values].sort().join('|')
           );
 
           return {
-            values: v.values,
+            values: [...v.values].sort(),
             price: v.price,
             stock: matchedBatch?.stock ?? 0,
+            discountPercentage: v.discountPercentage ?? 0,
             images: v.images || [],
           };
         })
@@ -492,6 +505,7 @@ export default function ProductsPage() {
                                   values: c,
                                   price: '',
                                   stock: '',
+                                  discountPercentage: '0',
                                   images: []
                                 }))
                               );
@@ -513,9 +527,10 @@ export default function ProductsPage() {
                                 <thead className="bg-gray-100">
                                   <tr>
                                     <th className="p-2 text-left">Variant</th>
+                                    <th className="p-2 text-left">Image</th>
                                     <th className="p-2 text-left">Price</th>
                                     <th className="p-2 text-left">Stock</th>
-                                    <th className="p-2 text-left">Image</th>
+                                    <th className="p-2 text-left">Discount %</th>
                                   </tr>
                                 </thead>
 
@@ -528,6 +543,57 @@ export default function ProductsPage() {
                                         {variantOptions
                                           .map((vo, index) => v.values[index])
                                           .join(' / ')}
+                                      </td>
+
+                                      {/* IMAGE */}
+                                      <td className="p-2">
+                                        <div className="flex items-center gap-2">
+
+                                          <label className="cursor-pointer bg-gray-200 px-3 py-1 rounded text-sm hover:bg-gray-300">
+                                            Upload
+                                            <input
+                                              type="file"
+                                              className="hidden"
+                                              onChange={async (e) => {
+                                                if (!e.target.files?.[0]) return;
+
+                                                const res = await uploadProductImage(e.target.files[0]);
+                                                const copy = [...variants];
+
+                                                if (!copy[i].images) copy[i].images = [];
+
+                                                copy[i].images.push(res.data.url);
+
+                                                setVariants(copy);
+                                              }}
+                                            />
+                                          </label>
+
+                                          <div className="flex gap-2 flex-wrap">
+                                            {v.images?.map((img: string, idx: number) => (
+                                              <div key={idx} className="relative">
+
+                                                <img
+                                                  src={img}
+                                                  className="w-12 h-12 object-cover rounded border"
+                                                />
+
+                                                {/* 🔥 REMOVE BUTTON */}
+                                                <button
+                                                  onClick={() => {
+                                                    const copy = [...variants];
+                                                    copy[i].images.splice(idx, 1);
+                                                    setVariants(copy);
+                                                  }}
+                                                  className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center"
+                                                >
+                                                  ✕
+                                                </button>
+
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
                                       </td>
 
                                       {/* PRICE */}
@@ -558,55 +624,17 @@ export default function ProductsPage() {
                                         />
                                       </td>
 
-                                      {/* IMAGE */}
                                       <td className="p-2">
-                                        <div className="flex items-center gap-2">
-
-                                          <label className="cursor-pointer bg-gray-200 px-3 py-1 rounded text-sm hover:bg-gray-300">
-                                            Upload
-                                            <input
-                                              type="file"
-                                              className="hidden"
-                                              onChange={async (e) => {
-                                                if (!e.target.files?.[0]) return;
-
-                                                const res = await uploadProductImage(e.target.files[0]);
-                                                const copy = [...variants];
-
-                                                if (!copy[i].images) copy[i].images = [];
-
-                                                copy[i].images.push(res.data.url);
-
-                                                setVariants(copy); setVariants(copy);
-                                              }}
-                                            />
-                                          </label>
-
-                                          <div className="flex gap-2 flex-wrap">
-                                            {v.images?.map((img: string, idx: number) => (
-                                              <div key={idx} className="relative">
-
-                                                <img
-                                                  src={img}
-                                                  className="w-12 h-12 object-cover rounded border"
-                                                />
-
-                                                {/* 🔥 REMOVE BUTTON */}
-                                                <button
-                                                  onClick={() => {
-                                                    const copy = [...variants];
-                                                    copy[i].images.splice(idx, 1);
-                                                    setVariants(copy);
-                                                  }}
-                                                  className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center"
-                                                >
-                                                  ✕
-                                                </button>
-
-                                              </div>
-                                            ))}
-                                          </div>
-                                        </div>
+                                        <input
+                                          type="number"
+                                          className="border px-2 py-1 rounded w-24"
+                                          value={v.discountPercentage}
+                                          onChange={(e) => {
+                                            const copy = [...variants];
+                                            copy[i].discountPercentage = Number(e.target.value);
+                                            setVariants(copy);
+                                          }}
+                                        />
                                       </td>
 
                                     </tr>
@@ -789,7 +817,12 @@ export default function ProductsPage() {
                 <div className="flex justify-center mt-6">
                   <button
                     onClick={save}
-                    className="bg-indigo-600 text-white px-20 py-2 rounded-lg"
+                    disabled={!isFormValid()}
+                    className={`px-20 py-2 rounded-lg text-white transition
+                     ${isFormValid()
+                        ? 'bg-indigo-600 hover:bg-indigo-700'
+                        : 'bg-gray-400 cursor-not-allowed'
+                      }`}
                   >
                     {editingId ? 'Update Product' : 'Add Product'}
                   </button>
@@ -827,7 +860,7 @@ export default function ProductsPage() {
                       Non Variant Product
                     </p>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
 
                       <div>
                         <p className="text-sm text-gray-500">Price</p>
@@ -840,6 +873,13 @@ export default function ProductsPage() {
                         <p className="text-sm text-gray-500">Stock</p>
                         <p className="font-semibold">
                           {viewingProduct.totalStock}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-sm text-gray-500">Discount</p>
+                        <p className="font-semibold">
+                          {viewingProduct.variants?.[0]?.discountPercentage}%
                         </p>
                       </div>
 
@@ -866,6 +906,7 @@ export default function ProductsPage() {
                           <th className="p-3 text-left">Variant</th>
                           <th className="p-3 text-left">Price</th>
                           <th className="p-3 text-left">Stock</th>
+                          <th className="p-3 text-left">Discount</th>
                         </tr>
                       </thead>
 
@@ -874,8 +915,8 @@ export default function ProductsPage() {
 
                           const matchedBatch = viewingProduct.batches?.find(
                             (b: any) =>
-                              JSON.stringify(b.variantValues) ===
-                              JSON.stringify(v.values)
+                              [...b.variantValues].sort().join('|') ===
+                              [...v.values].sort().join('|')
                           );
 
                           return (
@@ -891,6 +932,10 @@ export default function ProductsPage() {
 
                               <td className="p-3">
                                 {matchedBatch?.stock ?? 0}
+                              </td>
+
+                              <td className="p-3">
+                                {v.discountPercentage ?? 0}%
                               </td>
 
                             </tr>
@@ -1002,6 +1047,7 @@ export default function ProductsPage() {
                           <td className="border p-2 text-center whitespace-nowrap">
                             <button onClick={() => edit(p)} className="text-blue-600 mr-3">Edit</button>
                             <button onClick={() => remove(p._id)} className="text-red-600 mr-3">Delete</button>
+                            <button>Add Stock</button>
                           </td>
                         )
                       }

@@ -14,11 +14,11 @@ export default function SellersPage() {
     load();
   }, []);
 
-  const STATUS_COLORS: any = {
-    APPROVED: 'bg-blue-600',
-    PENDING: 'bg-yellow-600',
-    REJECTED: 'bg-red-600',
-  };
+  // const STATUS_COLORS: any = {
+  //   APPROVED: 'bg-blue-600',
+  //   PENDING: 'bg-yellow-600',
+  //   REJECTED: 'bg-red-600',
+  // };
 
   const load = async () => {
     const res = await getAllSellers();
@@ -43,10 +43,10 @@ export default function SellersPage() {
     return 'bg-yellow-100 text-yellow-700';
   };
 
-  const changeStatus = async (id: string, status: string) => {
-    await updateSellerStatus(id, status);
-    load();
-  };
+  // const changeStatus = async (id: string, status: string) => {
+  //   await updateSellerStatus(id, status);
+  //   load();
+  // };
 
   const Row = ({ label, value }: any) => (
     <div className="flex justify-between gap-4">
@@ -74,6 +74,7 @@ export default function SellersPage() {
                 <th className="border p-2">User</th>
                 <th className="border p-2">GST</th>
                 <th className="border p-2">Status</th>
+                <th className="border p-2">Profile Update</th>
                 <th className="border p-2">Actions</th>
               </tr>
             </thead>
@@ -102,6 +103,28 @@ export default function SellersPage() {
                     >
                       {s.status}
                     </span>
+                  </td>
+
+                  <td className="border p-2 text-center">
+
+                    {s.profileUpdateStatus ? (
+
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm ${badgeColor(
+                          s.profileUpdateStatus
+                        )}`}
+                      >
+                        {s.profileUpdateStatus}
+                      </span>
+
+                    ) : (
+
+                      <span className="text-gray-400">
+                        --
+                      </span>
+
+                    )}
+
                   </td>
 
                   <td className="border p-2 text-center whitespace-nowrap">
@@ -205,11 +228,28 @@ export default function SellersPage() {
 
               {/* ACTION BUTTONS */}
               <div className="flex justify-end gap-3 mt-6 border-t pt-4">
-                <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+
+                <button
+                  onClick={() => approve(selectedSeller._id)}
+                  disabled={selectedSeller.status === 'APPROVED'}
+                  className={`px-4 py-2 rounded-lg text-white
+                    ${selectedSeller.status === 'APPROVED'
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-green-600 hover:bg-green-700'
+                    }`}
+                >
                   Approve
                 </button>
 
-                <button className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                <button
+                  onClick={() => reject(selectedSeller._id)}
+                  disabled={selectedSeller.status === 'REJECTED'}
+                  className={`px-4 py-2 rounded-lg text-white
+                   ${selectedSeller.status === 'REJECTED'
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-red-500 hover:bg-red-600'
+                    }`}
+                >
                   Reject
                 </button>
 
@@ -219,6 +259,7 @@ export default function SellersPage() {
                 >
                   Close
                 </button>
+
               </div>
 
             </div>

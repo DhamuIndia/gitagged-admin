@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { adminAPI } from '@/lib/product-approval';
 
 export default function ProductApproval() {
   const [products, setProducts] = useState([]);
@@ -11,7 +11,7 @@ export default function ProductApproval() {
   const [loading, setLoading] = useState(false);
 
   const fetchProducts = async () => {
-    const res = await axios.get('http://localhost:3002/products/pending');
+    const res = await adminAPI.get('/products/pending');
     setProducts(res.data);
   };
 
@@ -23,9 +23,9 @@ export default function ProductApproval() {
     setLoading(true);
     try {
       if (product.isUpdatePending) {
-        await axios.patch(`http://localhost:3002/products/${product._id}/approve-update`);
+        await adminAPI.patch(`http://localhost:3002/products/${product._id}/approve-update`);
       } else {
-        await axios.patch(`http://localhost:3002/products/${product._id}/approve`);
+        await adminAPI.patch(`http://localhost:3002/products/${product._id}/approve`);
       }
       setSelectedProduct(null);
       fetchProducts();
@@ -43,12 +43,12 @@ export default function ProductApproval() {
     setLoading(true);
     try {
       if (product.isUpdatePending) {
-        await axios.patch(
+        await adminAPI.patch(
           `http://localhost:3002/products/${product._id}/reject-update`,
           { reason: rejectReason }
         );
       } else {
-        await axios.patch(
+        await adminAPI.patch(
           `http://localhost:3002/products/${product._id}/reject`,
           { reason: rejectReason }
         );
