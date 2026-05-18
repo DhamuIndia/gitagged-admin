@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { adminAPI } from '@/lib/admin-api';
 import {
   getAllSellers,
   updateSellerStatus,
@@ -14,27 +15,9 @@ export default function SellersPage() {
     load();
   }, []);
 
-  // const STATUS_COLORS: any = {
-  //   APPROVED: 'bg-blue-600',
-  //   PENDING: 'bg-yellow-600',
-  //   REJECTED: 'bg-red-600',
-  // };
-
   const load = async () => {
     const res = await getAllSellers();
     setSellers(res.data);
-  };
-
-  const approve = async (id: string) => {
-    if (!confirm('Approve this seller?')) return;
-    await updateSellerStatus(id, 'APPROVED');
-    load();
-  };
-
-  const reject = async (id: string) => {
-    if (!confirm('Reject this seller?')) return;
-    await updateSellerStatus(id, 'REJECTED');
-    load();
   };
 
   const badgeColor = (status: string) => {
@@ -43,10 +26,48 @@ export default function SellersPage() {
     return 'bg-yellow-100 text-yellow-700';
   };
 
-  // const changeStatus = async (id: string, status: string) => {
-  //   await updateSellerStatus(id, status);
-  //   load();
-  // };
+  const toggleBlock = async (id: string) => {
+    try {
+
+      if (selectedSeller.isBlocked) {
+        // UNBLOCK
+        await adminAPI.patch(
+          `/sellers/${id}/unblock`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('adminToken')}`,
+            },
+          }
+        );
+      } else {
+        // BLOCK
+        await adminAPI.patch(
+          `/sellers/${id}/block`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('adminToken')}`,
+            },
+          }
+        );
+      }
+
+      load();
+      // refresh selected seller
+      const updatedSeller = sellers.find((s) => s._id === id);
+
+      if (updatedSeller) {
+        setSelectedSeller({
+          ...updatedSeller,
+          isBlocked: !selectedSeller.isBlocked,
+        });
+      }
+
+    } catch (error) {
+      console.error('Block/Unblock failed', error);
+    }
+  };
 
   const Row = ({ label, value }: any) => (
     <div className="flex justify-between gap-4">
@@ -72,7 +93,7 @@ export default function SellersPage() {
                 <th className="border p-2">S.No</th>
                 <th className="border p-2">Business Name</th>
                 <th className="border p-2">User</th>
-                <th className="border p-2">GST</th>
+                <th className="border p-2">Business Type</th>
                 <th className="border p-2">Status</th>
                 <th className="border p-2">Profile Update</th>
                 <th className="border p-2">Actions</th>
@@ -92,7 +113,7 @@ export default function SellersPage() {
                   </td>
 
                   <td className="border p-2 text-center">
-                    {s.gstNumber}
+                    {s.businessType}
                   </td>
 
                   <td className="border p-2 text-center">
@@ -190,6 +211,7 @@ export default function SellersPage() {
                   </h3>
 
                   <div className="space-y-2">
+                    <Row label="Seller Name" value={selectedSeller.sellerName} />
                     <Row label="Account Holder" value={selectedSeller.accountHolderName} />
                     <Row label="Mobile" value={selectedSeller.mobileNumber} />
                     <Row label="Email" value={selectedSeller.email} />
@@ -230,27 +252,14 @@ export default function SellersPage() {
               <div className="flex justify-end gap-3 mt-6 border-t pt-4">
 
                 <button
-                  onClick={() => approve(selectedSeller._id)}
-                  disabled={selectedSeller.status === 'APPROVED'}
+                  onClick={() => toggleBlock(selectedSeller._id)}
                   className={`px-4 py-2 rounded-lg text-white
-                    ${selectedSeller.status === 'APPROVED'
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-green-600 hover:bg-green-700'
+                  ${selectedSeller.isBlocked
+                      ? 'bg-green-600 hover:bg-green-700'
+                      : 'bg-red-600 hover:bg-red-700'
                     }`}
                 >
-                  Approve
-                </button>
-
-                <button
-                  onClick={() => reject(selectedSeller._id)}
-                  disabled={selectedSeller.status === 'REJECTED'}
-                  className={`px-4 py-2 rounded-lg text-white
-                   ${selectedSeller.status === 'REJECTED'
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-red-500 hover:bg-red-600'
-                    }`}
-                >
-                  Reject
+                  {selectedSeller.isBlocked ? 'Unblock' : 'Block'}
                 </button>
 
                 <button

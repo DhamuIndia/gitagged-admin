@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { link } from 'fs';
 
 export default function DashboardLayout({
   children,
@@ -80,6 +81,17 @@ export default function DashboardLayout({
             🛒 Products
           </Link>
 
+           {
+            role == 'ADMIN' && (
+              <Link
+                href="/dashboard/product-approval"
+                className={linkClass('/dashboard/product-approval')}
+              >
+                ✅ Product Approval
+              </Link>
+            )
+          }
+
           {
             role == 'ADMIN' && (
               <Link
@@ -110,23 +122,22 @@ export default function DashboardLayout({
           }
 
           {
-            role == 'ADMIN' && (
-              <Link
-                href="/dashboard/product-approval"
-                className={linkClass('/dashboard/product-approval')}
-              >
-                ✅ Product Approval
-              </Link>
-            )
-          }
-
-          {
             role == 'SELLER' && (
               <Link
                 href="/dashboard/seller-profile"
                 className={linkClass('/dashboard/seller-profile')}
               >
                 🤝 Seller Profile
+              </Link>
+            )
+          }
+
+          {
+            role == 'ADMIN' && (
+              <Link
+                href="/dashboard/seller-approval"
+                className={linkClass('/dashboard/seller-approval')}>
+                ✅ Seller Approval
               </Link>
             )
           }

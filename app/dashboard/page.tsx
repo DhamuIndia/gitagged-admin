@@ -42,12 +42,16 @@ export default function DashboardPage() {
             (s: any) => s.status === 'PENDING'
           ).length;
 
-        const [c, r, p, o, a] = await Promise.all([
+        let a = { data: [] };
+        if (storedRole === 'ADMIN') {
+          a = await getPendingProducts();
+        }
+
+        const [c, r, p, o] = await Promise.all([
           getCategories(),
           getRegions(),
           getProducts(),
           getAllOrders(),
-          getPendingProducts(),
         ]);
 
         setCounts({
@@ -145,16 +149,12 @@ export default function DashboardPage() {
             href="/dashboard/sellers"
             className="rounded-xl bg-slate-50 p-6 border block hover:border-indigo-600 transition"
           >
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-black hover:text-indigo-600 transition">
-                Sellers
-              </h2>
-              {counts.pendingSellerApprovals > 0 && (
-                <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
-              )}
-            </div>
-            <p className="text-xl font-bold mt-2">{counts.sellers}</p>
-
+            <h2 className="text-2xl font-bold text-black hover:text-indigo-600 transition">
+              Sellers
+            </h2>
+            {counts.pendingSellerApprovals > 0 && (
+              <p className="text-xl font-bold mt-2">{counts.sellers}</p>
+            )}
           </Link>)
         }
 
@@ -177,8 +177,26 @@ export default function DashboardPage() {
           </Link>)
         }
 
+        {/* Seller Approval */}
+        {
+          role == 'ADMIN' && (<Link
+            href="/dashboard/seller-approval"
+            className="rounded-xl bg-slate-50 p-6 border block hover:border-indigo-600 transition"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-black hover:text-indigo-600 transition">
+                Seller Approval
+              </h2>
+              {/* 🔴 RED DOT */}
+              {counts.pendingSellerApprovals > 0 && (
+                <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+              )}
+            </div>
+            <p className="text-xl font-bold mt-2">{counts.pendingSellerApprovals}</p>
+          </Link>)
+        }
+
       </div>
     </div>
   );
 }
-
