@@ -16,6 +16,11 @@ export default function UsersPage() {
     };
 
     const toggleBlock = async (user: any) => {
+
+        const action = user.isBloked ? 'unblock' : 'block';
+        const confirmAction = window.confirm(`Are you sure you want to ${action} this user?`);
+        if (!confirmAction) return;
+        
         if (user.isBlocked) {
             await unblockUser(user._id);
         } else {
@@ -90,7 +95,6 @@ export default function UsersPage() {
                                                     <span className="text-gray-400">No address</span>
                                                 )}
                                             </td>
-                                            {/* <td className="border p-2 text-center whitespace-nowrap">{user.address}</td> */}
 
                                             <td className="border p-2 text-center">
                                                 <span className={`px-2 py-1 rounded-full text-white ${status === 'Active' ? 'bg-green-500' :

@@ -7,7 +7,7 @@ const API = axios.create({
 API.interceptors.request.use((config) => {
 
   const role = localStorage.getItem('role');
-
+  console.log("role-order", role);
   let token = null;
 
   if (role === 'ADMIN') {
@@ -19,6 +19,7 @@ API.interceptors.request.use((config) => {
   }
 
   if (token) {
+    console.log("token-order", token);
     config.headers.Authorization = `Bearer ${token}`;
   }
 

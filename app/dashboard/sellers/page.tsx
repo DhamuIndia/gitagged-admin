@@ -29,8 +29,15 @@ export default function SellersPage() {
   const toggleBlock = async (id: string) => {
     try {
 
+      // if(){
+
+      // }
+
+      const action = selectedSeller?.isBlocked ? 'unblock' : 'block';
+      const confirmAction = window.confirm(`Are you sure you want to ${action} this seller?`);
+      if (!confirmAction) return;
+
       if (selectedSeller.isBlocked) {
-        // UNBLOCK
         await adminAPI.patch(
           `/sellers/${id}/unblock`,
           {},
@@ -41,7 +48,6 @@ export default function SellersPage() {
           }
         );
       } else {
-        // BLOCK
         await adminAPI.patch(
           `/sellers/${id}/block`,
           {},
@@ -54,7 +60,6 @@ export default function SellersPage() {
       }
 
       load();
-      // refresh selected seller
       const updatedSeller = sellers.find((s) => s._id === id);
 
       if (updatedSeller) {
@@ -94,7 +99,7 @@ export default function SellersPage() {
                 <th className="border p-2">Business Name</th>
                 <th className="border p-2">User</th>
                 <th className="border p-2">Business Type</th>
-                <th className="border p-2">Status</th>
+                <th className="border p-2">Approve Status</th>
                 <th className="border p-2">Profile Update</th>
                 <th className="border p-2">Actions</th>
               </tr>
@@ -250,17 +255,18 @@ export default function SellersPage() {
 
               {/* ACTION BUTTONS */}
               <div className="flex justify-end gap-3 mt-6 border-t pt-4">
-
-                <button
-                  onClick={() => toggleBlock(selectedSeller._id)}
-                  className={`px-4 py-2 rounded-lg text-white
+                {selectedSeller.status === 'APPROVED' && (
+                  <button
+                    onClick={() => toggleBlock(selectedSeller._id)}
+                    className={`px-4 py-2 rounded-lg text-white
                   ${selectedSeller.isBlocked
-                      ? 'bg-green-600 hover:bg-green-700'
-                      : 'bg-red-600 hover:bg-red-700'
-                    }`}
-                >
-                  {selectedSeller.isBlocked ? 'Unblock' : 'Block'}
-                </button>
+                        ? 'bg-green-600 hover:bg-green-700'
+                        : 'bg-red-600 hover:bg-red-700'
+                      }`}
+                  >
+                    {selectedSeller.isBlocked ? 'Unblock' : 'Block'}
+                  </button>
+                )}
 
                 <button
                   onClick={() => setSelectedSeller(null)}

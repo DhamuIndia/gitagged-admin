@@ -16,6 +16,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [role, setRole] = useState<string | null>(null);
+  const [selectedSeller, setSelectedSeller] = useState<any>(null);
 
   useEffect(() => {
 
@@ -155,6 +156,15 @@ export default function OrdersPage() {
                           Qty: {item.quantity}
                         </div>
 
+                        {role === 'ADMIN' && item.sellerId && (
+                          <button
+                            onClick={() => setSelectedSeller(item.sellerId)}
+                            className="mt-2 bg-indigo-600 text-white px-3 py-1 rounded text-sm"
+                          >
+                            View Seller
+                          </button>
+                        )}
+
                         {/* STATUS DROPDOWN */}
                         {role === 'SELLER' && (
                           <select
@@ -202,6 +212,66 @@ export default function OrdersPage() {
               )}
             </tbody>
           </table>
+
+          {selectedSeller && (
+            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-xl w-[400px] shadow-xl">
+
+                <h2 className="text-xl font-semibold mb-4 text-center">
+                  Seller Details
+                </h2>
+
+                <div className="space-y-3">
+
+                  <div className="grid grid-cols-[120px_1fr] gap-2">
+                    <span className="font-semibold">Name</span>
+                    <span>: {selectedSeller.sellerName}</span>
+                  </div>
+
+                  <div className="grid grid-cols-[120px_1fr] gap-2">
+                    <span className="font-semibold">Business</span>
+                    <span>: {selectedSeller.businessName}</span>
+                  </div>
+
+                  <div className="grid grid-cols-[120px_1fr] gap-2">
+                    <span className="font-semibold">Email</span>
+                    <span>: {selectedSeller.email}</span>
+                  </div>
+
+                  <div className="grid grid-cols-[120px_1fr] gap-2">
+                    <span className="font-semibold">Phone</span>
+                    <span>: {selectedSeller.mobileNumber}</span>
+                  </div>
+
+                  <div className="grid grid-cols-[120px_1fr] gap-2">
+                    <span className="font-semibold">Address</span>
+                    <span>: {selectedSeller.address}</span>
+                  </div>
+
+                  <div className="grid grid-cols-[120px_1fr] gap-2">
+                    <span className="font-semibold">GST</span>
+                    <span>: {selectedSeller.gstNumber}</span>
+                  </div>
+
+                  <div className="grid grid-cols-[120px_1fr] gap-2">
+                    <span className="font-semibold">Status</span>
+                    <span>: {selectedSeller.status}</span>
+                  </div>
+
+                </div>
+
+               <div className="flex justify-center">
+                <button
+                  onClick={() => setSelectedSeller(null)}
+                  className="mt-5 bg-red-500 text-white px-4 py-2 rounded "
+                >
+                  Close
+                </button>
+                </div>
+
+              </div>
+            </div>
+          )}
 
           {loading && (
             <div className="text-center mt-4 text-gray-500">

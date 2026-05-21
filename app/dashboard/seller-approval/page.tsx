@@ -173,12 +173,7 @@ export default function SellerApprovalPage() {
 
                                         <div className="flex items-center gap-4">
 
-                                            {/* <div className="h-14 w-14 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-lg">
-                                                {s.sellerName?.charAt(0)}
-                                            </div> */}
-
                                             <div>
-
                                                 <p className="font-semibold text-gray-900">
                                                     {s.sellerName}
                                                 </p>
@@ -465,7 +460,7 @@ export default function SellerApprovalPage() {
                                                         }
                                                         className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-xl font-medium transition"
                                                     >
-                                                        Remove
+                                                        Reject
                                                     </button>
                                                 )
                                             }
