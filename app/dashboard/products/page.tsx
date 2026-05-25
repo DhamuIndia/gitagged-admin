@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getProducts, createProduct, updateProduct, deleteProduct, getSellerProducts } from '@/lib/products';
+import { getProducts, createProduct, updateProduct, deleteProduct, getSellerProducts, addProductStock } from '@/lib/products';
 import { getCategories } from '@/lib/categories';
 import { getRegions } from '@/lib/gi-regions';
 import { uploadProductImage } from '@/lib/upload';
@@ -23,6 +23,12 @@ export default function ProductsPage() {
   const [viewingProduct, setViewingProduct] = useState<any | null>(null);
 
   const [variants, setVariants] = useState<any[]>([]);
+
+  const [showStockModal, setShowStockModal] = useState(false);
+
+  const [stockProduct, setStockProduct] = useState<any | null>(null);
+
+  const [stockRows, setStockRows] = useState<any[]>([]);
 
   const [form, setForm] = useState({
     title: '',
@@ -253,6 +259,50 @@ export default function ProductsPage() {
     setShowModel(true);
   };
 
+  const addStock = (product: any) => {
+
+    setStockProduct(product);
+
+    // NON VARIANT
+    if (
+      !product.variantOptions ||
+      product.variantOptions.length === 0
+    ) {
+
+      setStockRows([
+        {
+          variantValues: ['default'],
+          currentStock: product.totalStock || 0,
+          stock: '',
+          expiryDate: '',
+        }
+      ]);
+
+    } else {
+
+      // VARIANT PRODUCT
+      const rows = product.variants.map((v: any) => {
+
+        const batch = product.batches?.find(
+          (b: any) =>
+            [...b.variantValues].sort().join('|') ===
+            [...v.values].sort().join('|')
+        );
+
+        return {
+          variantValues: v.values,
+          currentStock: batch?.stock || 0,
+          stock: '',
+          expiryDate: '',
+        };
+      });
+
+      setStockRows(rows);
+    }
+
+    setShowStockModal(true);
+  };
+
   const remove = async (id: string) => {
     if (!confirm('Delete product?')) return;
     await deleteProduct(id);
@@ -335,6 +385,39 @@ export default function ProductsPage() {
 
       return result;
     }, [[]] as string[][]);
+  };
+
+  const saveStock = async () => {
+
+    try {
+
+      for (const row of stockRows) {
+
+        if (!row.stock || Number(row.stock) <= 0) {
+          continue;
+        }
+
+        await addProductStock(
+          stockProduct._id,
+          {
+            variantValues: row.variantValues,
+            stock: Number(row.stock),
+            expiryDate:
+              row.expiryDate || null,
+          }
+        );
+      }
+
+      alert('Stock added successfully');
+
+      setShowStockModal(false);
+
+      load();
+
+    } catch (err) {
+
+      alert('Failed to add stock');
+    }
   };
 
   return (
@@ -498,7 +581,20 @@ export default function ProductsPage() {
                           <button
                             className="bg-indigo-600 text-white px-4 py-2 rounded"
                             onClick={() => {
-                              const combinations = generateCombinations(variantOptions);
+
+                              // REMOVE EMPTY VARIANT TYPES & OPTIONS
+                              const cleanedOptions = variantOptions
+                                .filter(vo =>
+                                  vo.name.trim() !== '' &&
+                                  vo.options.some(opt => opt.trim() !== '')
+                                )
+                                .map(vo => ({
+                                  ...vo,
+                                  options: vo.options.filter(opt => opt.trim() !== '')
+                                }));
+
+                              const combinations =
+                                generateCombinations(cleanedOptions);
 
                               setVariants(
                                 combinations.map((c: string[]) => ({
@@ -951,6 +1047,115 @@ export default function ProductsPage() {
           </div>
         )}
 
+        {showStockModal && (
+
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+            <div className="bg-white w-full max-w-3xl rounded-xl shadow-2xl p-6">
+
+              <div className="flex justify-between items-center mb-5">
+                <h2 className="text-xl font-semibold">
+                  Add Stock - {stockProduct?.title}
+                </h2>
+
+                <button
+                  onClick={() => setShowStockModal(false)}
+                  className="text-gray-500"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="overflow-x-auto border rounded-lg">
+
+                <table className="w-full text-sm">
+
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="p-3 text-left">Variant</th>
+                      <th className="p-3 text-left">Current Stock</th>
+                      <th className="p-3 text-left">Add Stock</th>
+                      <th className="p-3 text-left">Expiry Date</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+
+                    {stockRows.map((row, index) => (
+
+                      <tr key={index} className="border-t">
+
+                        <td className="p-3">
+                          {row.variantValues[0] === 'default'
+                            ? 'Default'
+                            : row.variantValues.join(' / ')
+                          }
+                        </td>
+
+                        <td className="p-3 font-semibold">
+                          {row.currentStock}
+                        </td>
+
+                        <td className="p-3">
+
+                          <input
+                            type="number"
+                            value={row.stock}
+                            className="border px-3 py-2 rounded w-28"
+                            onChange={(e) => {
+
+                              const copy = [...stockRows];
+
+                              copy[index].stock =
+                                e.target.value;
+
+                              setStockRows(copy);
+                            }}
+                          />
+
+                        </td>
+
+                        <td className="p-3">
+
+                          <input
+                            type="date"
+                            value={row.expiryDate}
+                            className="border px-3 py-2 rounded"
+                            onChange={(e) => {
+
+                              const copy = [...stockRows];
+
+                              copy[index].expiryDate =
+                                e.target.value;
+
+                              setStockRows(copy);
+                            }}
+                          />
+
+                        </td>
+
+                      </tr>
+                    ))}
+
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex justify-end mt-6">
+
+                <button
+                  onClick={saveStock}
+                  className="bg-green-600 text-white px-6 py-2 rounded-lg"
+                >
+                  Save Stock
+                </button>
+
+              </div>
+
+            </div>
+          </div>
+        )}
+
         {/* LIST */}
         <div className="bg-white rounded-xl shadow p-6">
           <h2 className="font-semibold mb-4">Product List</h2>
@@ -1047,7 +1252,7 @@ export default function ProductsPage() {
                           <td className="border p-2 text-center whitespace-nowrap">
                             <button onClick={() => edit(p)} className="text-blue-600 mr-3">Edit</button>
                             <button onClick={() => remove(p._id)} className="text-red-600 mr-3">Delete</button>
-                            <button>Add Stock</button>
+                            <button onClick={() => addStock(p)} className="text-green-600">Add Stock</button>
                           </td>
                         )
                       }

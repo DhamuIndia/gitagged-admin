@@ -5,10 +5,9 @@ import { adminAPI } from '@/lib/admin-api';
 import { updateSellerStatus } from '@/lib/sellers';
 
 export default function SellerApprovalPage() {
-
-    const [newSellers, setNewSellers] = useState<any[]>([]);
-    const [profileUpdates, setProfileUpdates] = useState<any[]>([]);
     const [selectedSeller, setSelectedSeller] = useState<any>(null);
+    const [sellerRequests, setSellerRequests] =
+        useState<any[]>([]);
 
     useEffect(() => {
         fetchData();
@@ -20,17 +19,13 @@ export default function SellerApprovalPage() {
 
         const sellers = res.data;
 
-        setNewSellers(
-            sellers.filter(
-                (s: any) => s.status === 'PENDING'
-            )
+        const requests = sellers.filter(
+            (s: any) =>
+                s.status === 'PENDING' ||
+                s.isProfileUpdatePending
         );
 
-        setProfileUpdates(
-            sellers.filter(
-                (s: any) => s.isProfileUpdatePending
-            )
-        );
+        setSellerRequests(requests);
     };
 
     const approve = async (id: string) => {
@@ -158,7 +153,7 @@ export default function SellerApprovalPage() {
 
                         <tbody>
 
-                            {newSellers.map((s, index) => (
+                            {sellerRequests.map((s, index) => (
 
                                 <tr
                                     key={s._id}
@@ -204,9 +199,19 @@ export default function SellerApprovalPage() {
 
                                     <td className="px-6 py-5">
 
-                                        <span className="bg-yellow-100 text-yellow-700 px-4 py-1 rounded-full text-sm font-medium">
-                                            NEW SELLER
-                                        </span>
+                                        {s.isProfileUpdatePending ? (
+
+                                            <span className="bg-orange-100 text-orange-700 px-4 py-1 rounded-full text-sm font-medium">
+                                                UPDATE REQUEST
+                                            </span>
+
+                                        ) : (
+
+                                            <span className="bg-yellow-100 text-yellow-700 px-4 py-1 rounded-full text-sm font-medium">
+                                                NEW SELLER
+                                            </span>
+
+                                        )}
 
                                     </td>
 
@@ -229,196 +234,86 @@ export default function SellerApprovalPage() {
 
                     </table>
 
-                </div>
+                    {
+                        selectedSeller && (
+                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 
-            </div>
+                                <div className="bg-white rounded-2xl shadow-2xl w-[800px] max-h-[90vh] overflow-y-auto relative p-6">
 
-            {/* PROFILE UPDATES */}
-            <div className="bg-white rounded-2xl shadow-sm p-6">
+                                    {/* CLOSE */}
+                                    <button
+                                        onClick={() => setSelectedSeller(null)}
+                                        className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-lg"
+                                    >
+                                        ✕
+                                    </button>
 
-                <h1 className="text-3xl font-semibold mb-8 text-gray-900">
-                    Seller Profile Updates
-                </h1>
+                                    {/* HEADER */}
+                                    <div className="mb-6 border-b pb-4">
+                                        <h2 className="text-2xl font-bold text-gray-800">
+                                            Seller Details
+                                        </h2>
 
-                <div className="overflow-hidden rounded-2xl border border-gray-100">
+                                        <p className="text-sm text-gray-500">
+                                            Complete information about the seller
+                                        </p>
+                                    </div>
 
-                    <table className="w-full">
+                                    {/* GRID */}
+                                    <div className="grid grid-cols-2 gap-6 text-sm">
 
-                        <thead className="bg-gray-50">
+                                        {/* BUSINESS INFO */}
+                                        <div className="bg-gray-50 p-4 rounded-xl">
 
-                            <tr>
+                                            <h3 className="font-semibold text-gray-700 mb-3">
+                                                Business Information
+                                            </h3>
 
-                                <th className="px-6 py-5 text-left text-sm font-semibold text-gray-700">
-                                    S.No
-                                </th>
-
-                                <th className="px-6 py-5 text-left text-sm font-semibold text-gray-700">
-                                    Seller
-                                </th>
-
-                                <th className="px-6 py-5 text-left text-sm font-semibold text-gray-700">
-                                    Business
-                                </th>
-
-                                <th className="px-6 py-5 text-left text-sm font-semibold text-gray-700">
-                                    Status
-                                </th>
-
-                                <th className="px-6 py-5 text-left text-sm font-semibold text-gray-700">
-                                    Action
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                            {profileUpdates.map((s, index) => (
-
-                                <tr
-                                    key={s._id}
-                                    className="border-t"
-                                >
-
-                                    <td className="px-6 py-5">
-                                        {index + 1}
-                                    </td>
-
-                                    <td className="px-6 py-5">
-
-                                        <div className="flex items-center gap-4">
-
-                                            <div className="h-14 w-14 rounded-xl bg-orange-100 flex items-center justify-center text-orange-700 font-bold text-lg">
-                                                {s.sellerName?.charAt(0)}
-                                            </div>
-
-                                            <div>
-
-                                                <p className="font-semibold text-gray-900">
-                                                    {s.sellerName}
-                                                </p>
-
-                                                <p className="text-sm text-gray-500">
-                                                    {s.email}
-                                                </p>
-
+                                            <div className="space-y-2">
+                                                <Row label="Business Name" value={selectedSeller.businessName} />
+                                                <Row label="Business Type" value={selectedSeller.businessType} />
+                                                <Row label="GST Number" value={selectedSeller.gstNumber} />
+                                                <Row label="PAN Number" value={selectedSeller.panNumber} />
+                                                <Row label="Description" value={selectedSeller.productDescription} />
                                             </div>
 
                                         </div>
 
-                                    </td>
+                                        {/* CONTACT INFO */}
+                                        <div className="bg-gray-50 p-4 rounded-xl">
 
-                                    <td className="px-6 py-5">
+                                            <h3 className="font-semibold text-gray-700 mb-3">
+                                                Contact Information
+                                            </h3>
 
-                                        <div>
-
-                                            <p className="font-medium text-gray-800">
-                                                {s.businessName}
-                                            </p>
-
-                                            <p className="text-sm text-gray-500">
-                                                {s.businessType}
-                                            </p>
+                                            <div className="space-y-2">
+                                                <Row label="Seller Name" value={selectedSeller.sellerName} />
+                                                <Row label="Account Holder" value={selectedSeller.accountHolderName} />
+                                                <Row label="Mobile" value={selectedSeller.mobileNumber} />
+                                                <Row label="Email" value={selectedSeller.email} />
+                                            </div>
 
                                         </div>
 
-                                    </td>
+                                        {/* BANK INFO */}
+                                        <div className="bg-gray-50 p-4 rounded-xl col-span-2">
 
-                                    <td className="px-6 py-5">
+                                            <h3 className="font-semibold text-gray-700 mb-3">
+                                                Banking Details
+                                            </h3>
 
-                                        <span className="bg-orange-100 text-orange-700 px-4 py-1 rounded-full text-sm font-medium">
-                                            UPDATE REQUEST
-                                        </span>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <Row label="Account Number" value={selectedSeller.bankAccountNumber} />
+                                                <Row label="IFSC Code" value={selectedSeller.ifscCode} />
+                                            </div>
 
-                                    </td>
-
-                                    <td className="px-6 py-5">
-
-                                        <button
-                                            onClick={() => setSelectedSeller(s)}
-                                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl font-medium transition"
-                                        >
-                                            Review
-                                        </button>
-
-                                    </td>
-
-                                </tr>
-
-                            ))}
-
-                            {/* MODAL */}
-                            {selectedSeller && (
-                                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-
-                                    <div className="bg-white rounded-2xl shadow-2xl w-[800px] max-h-[90vh] overflow-y-auto relative p-6">
-
-                                        {/* CLOSE */}
-                                        <button
-                                            onClick={() => setSelectedSeller(null)}
-                                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-lg"
-                                        >
-                                            ✕
-                                        </button>
-
-                                        {/* HEADER */}
-                                        <div className="mb-6 border-b pb-4">
-                                            <h2 className="text-2xl font-bold text-gray-800">
-                                                Seller Details
-                                            </h2>
-                                            <p className="text-sm text-gray-500">
-                                                Complete information about the seller
-                                            </p>
                                         </div>
 
-                                        {/* GRID SECTIONS */}
-                                        <div className="grid grid-cols-2 gap-6 text-sm">
-
-                                            {/* BUSINESS INFO */}
-                                            <div className="bg-gray-50 p-4 rounded-xl">
-                                                <h3 className="font-semibold text-gray-700 mb-3">
-                                                    Business Information
-                                                </h3>
-
-                                                <div className="space-y-2">
-                                                    <Row label="Business Name" value={selectedSeller.businessName} />
-                                                    <Row label="Business Type" value={selectedSeller.businessType} />
-                                                    <Row label="GST Number" value={selectedSeller.gstNumber} />
-                                                    <Row label="PAN Number" value={selectedSeller.panNumber} />
-                                                    <Row label="Description" value={selectedSeller.productDescription} />
-                                                </div>
-                                            </div>
-
-                                            {/* CONTACT INFO */}
-                                            <div className="bg-gray-50 p-4 rounded-xl">
-                                                <h3 className="font-semibold text-gray-700 mb-3">
-                                                    Contact Information
-                                                </h3>
-
-                                                <div className="space-y-2">
-                                                    <Row label="Seller Name" value={selectedSeller.sellerName} />
-                                                    <Row label="Account Holder" value={selectedSeller.accountHolderName} />
-                                                    <Row label="Mobile" value={selectedSeller.mobileNumber} />
-                                                    <Row label="Email" value={selectedSeller.email} />
-                                                </div>
-                                            </div>
-
-                                            {/* BANK INFO */}
-                                            <div className="bg-gray-50 p-4 rounded-xl col-span-2">
-                                                <h3 className="font-semibold text-gray-700 mb-3">
-                                                    Banking Details
-                                                </h3>
-
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <Row label="Account Number" value={selectedSeller.bankAccountNumber} />
-                                                    <Row label="IFSC Code" value={selectedSeller.ifscCode} />
-                                                </div>
-                                            </div>
-
-                                            {/* SIGNATURE */}
-                                            {selectedSeller.digitalSignatureUrl && (
+                                        {/* SIGNATURE */}
+                                        {
+                                            selectedSeller.digitalSignatureUrl && (
                                                 <div className="bg-gray-50 p-4 rounded-xl col-span-2">
+
                                                     <h3 className="font-semibold text-gray-700 mb-3">
                                                         Digital Signature
                                                     </h3>
@@ -429,63 +324,83 @@ export default function SellerApprovalPage() {
                                                             className="h-24 object-contain"
                                                         />
                                                     </div>
+
                                                 </div>
-                                            )}
+                                            )
+                                        }
 
-                                        </div>
+                                    </div>
 
-                                        {/* ACTION BUTTONS */}
-                                        <div className="flex justify-end gap-3 mt-6 border-t pt-4">
+                                    {/* ACTION BUTTONS */}
+                                    <div className="flex justify-end gap-3 mt-6 border-t pt-4">
 
-                                            {/* APPROVE */}
-                                            {
-                                                selectedSeller.status === 'PENDING' && (
+                                        {
+                                            selectedSeller.isProfileUpdatePending ? (
+
+                                                <>
+                                                    <button
+                                                        onClick={() =>
+                                                            approveProfileUpdate(selectedSeller._id)
+                                                        }
+                                                        className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl font-medium transition"
+                                                    >
+                                                        Approve Update
+                                                    </button>
+
+                                                    <button
+                                                        onClick={() =>
+                                                            rejectProfileUpdate(selectedSeller._id)
+                                                        }
+                                                        className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-xl font-medium transition"
+                                                    >
+                                                        Reject Update
+                                                    </button>
+                                                </>
+
+                                            ) : (
+
+                                                <>
                                                     <button
                                                         onClick={() =>
                                                             approveSeller(selectedSeller._id)
                                                         }
                                                         className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl font-medium transition"
                                                     >
-                                                        Approve
+                                                        Approve Seller
                                                     </button>
-                                                )
-                                            }
 
-                                            {/* REMOVE / REJECT */}
-                                            {
-                                                selectedSeller.status === 'PENDING' && (
                                                     <button
                                                         onClick={() =>
                                                             rejectSeller(selectedSeller._id)
                                                         }
                                                         className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-xl font-medium transition"
                                                     >
-                                                        Reject
+                                                        Reject Seller
                                                     </button>
-                                                )
-                                            }
+                                                </>
+                                            )
+                                        }
 
-                                            {/* CANCEL */}
-                                            <button
-                                                onClick={() => setSelectedSeller(null)}
-                                                className="border border-gray-300 hover:bg-gray-100 px-5 py-2 rounded-xl font-medium transition"
-                                            >
-                                                Cancel
-                                            </button>
-
-                                        </div>
+                                        <button
+                                            onClick={() => setSelectedSeller(null)}
+                                            className="border border-gray-300 hover:bg-gray-100 px-5 py-2 rounded-xl font-medium transition"
+                                        >
+                                            Cancel
+                                        </button>
 
                                     </div>
+
                                 </div>
-                            )}
 
-                        </tbody>
-
-                    </table>
+                            </div>
+                        )
+                    }
 
                 </div>
 
             </div>
+
+
 
         </div>
     );

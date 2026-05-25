@@ -13,3 +13,13 @@ export const deleteProduct = (id: string) =>
 
 export const getSellerProducts = () =>
   api.get('/products/seller/my-products');
+
+export const addProductStock = (
+  productId: string,
+  data: any
+) => {
+  return api.post(
+    `/products/${productId}/add-stock`,
+    data
+  );
+};
